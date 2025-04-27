@@ -2,6 +2,7 @@ package com.tasktraker.model;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.ColumnDefault;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
@@ -38,6 +39,10 @@ public class Task {
 	@NotEmpty
 	@Column(nullable=false)
 	private String user;
+	
+
+	@NotEmpty
+	private String status;
 	
 	public Task() {
 		
@@ -89,6 +94,14 @@ public class Task {
 
 	public void setUser(String user) {
 		this.user = user;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 	
 	
