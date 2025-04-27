@@ -1,1 +1,1 @@
-INSERT INTO task (id,completed_at,created_at,updated_at,description,user) VALUES (1,NULL,'2025-04-27T17:26:38.655543224','2025-04-27T17:26:38.655543224','description1','user1');
+INSERT INTO task (completed_at,created_at,updated_at,description,user,status) VALUES (NULL,'2025-04-27T17:26:38.655543224','2025-04-27T17:26:38.655543224','description1','user1','to-do'),(NULL,'2025-04-27T17:26:38.655543224','2025-04-27T17:26:38.655543224','description2','user2','in-progress');
