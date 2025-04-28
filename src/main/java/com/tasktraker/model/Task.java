@@ -1,8 +1,11 @@
 package com.tasktraker.model;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
@@ -11,6 +14,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 
 @Entity
@@ -24,17 +28,19 @@ public class Task {
 	@Column(nullable=false)
 	private String description;
 	
-	@NotEmpty
+
+	@CreationTimestamp
 	@Column(nullable=false)
-	private LocalDateTime createdAt;
+	private Timestamp createdAt;
 	
-	@NotEmpty
+
+	@UpdateTimestamp
 	@Column(nullable=false)
-	private LocalDateTime updatedAt;
+	private Timestamp updatedAt;
 	
 	@Nullable
 	@Column(nullable=true)
-	private LocalDateTime completedAt;
+	private Timestamp completedAt;
 	
 	@NotEmpty
 	@Column(nullable=false)
@@ -64,27 +70,27 @@ public class Task {
 		this.description = Description;
 	}
 
-	public LocalDateTime getCreatedAt() {
+	public Timestamp getCreatedAt() {
 		return createdAt;
 	}
 
-	public void setCreatedAt(LocalDateTime createdAt) {
+	public void setCreatedAt(Timestamp createdAt) {
 		this.createdAt = createdAt;
 	}
 
-	public LocalDateTime getUpdatedAt() {
+	public Timestamp getUpdatedAt() {
 		return updatedAt;
 	}
 
-	public void setUpdatedAt(LocalDateTime updatedAt) {
+	public void setUpdatedAt(Timestamp updatedAt) {
 		this.updatedAt = updatedAt;
 	}
 
-	public LocalDateTime getCompletedAt() {
+	public Timestamp getCompletedAt() {
 		return completedAt;
 	}
 
-	public void setCompletedAt(LocalDateTime completedAt) {
+	public void setCompletedAt(Timestamp completedAt) {
 		this.completedAt = completedAt;
 	}
 
