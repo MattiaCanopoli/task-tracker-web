@@ -13,6 +13,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -46,9 +48,9 @@ public class Task {
 	@Column(nullable=false)
 	private String user;
 	
-
-	@NotEmpty
-	private String status;
+	@ManyToOne
+	@JoinColumn(name="status_id")
+	private Status status;
 	
 	public Task() {
 		
@@ -102,11 +104,11 @@ public class Task {
 		this.user = user;
 	}
 
-	public String getStatus() {
+	public Status getStatus() {
 		return status;
 	}
 
-	public void setStatus(String status) {
+	public void setStatus(Status status) {
 		this.status = status;
 	}
 	
