@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tasktraker.model.Status;
 import com.tasktraker.model.Task;
 import com.tasktraker.service.TaskService;
 
@@ -31,13 +32,14 @@ public class TaskRestController {
 	//READ (multiple)
 	@GetMapping("/tasks")
 	public ResponseEntity<List<Task>> getTasks(
-			@RequestParam(name = "status", required = false) String status) {
+			//@RequestParam(name = "status", required = false) Status status
+			) {
 
 		List<Task> tasks = tService.getTasks();
 
-		if (status != null && !status.isEmpty()) {
-			tasks = tService.getByStatus(status);
-		}
+//		if (status != null && !status.isEmpty()) {
+//			tasks = tService.getByStatus(status);
+//		}
 
 		if (tasks.size() == 0) {
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);

@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.tasktraker.model.Status;
 import com.tasktraker.model.Task;
 import com.tasktraker.repository.TaskRepo;
 
@@ -28,9 +29,9 @@ public class TaskService {
 		return taskRepo.findAll();
 	}
 
-	public List<Task> getByStatus(String status) {
-		return taskRepo.findByStatusContains(status);
-	}
+//	public List<Task> getByStatus(Status status) {
+//		return taskRepo.findByStatusContains(status);
+//	}
 
 	public Task getByID(long id) {
 		Optional<Task> t = taskRepo.findById(id);
