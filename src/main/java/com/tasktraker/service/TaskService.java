@@ -40,4 +40,8 @@ public class TaskService {
 		}
 		return null;
 	}
+	
+	public void save (Task task) {
+		taskRepo.save(task);
+	}
 }

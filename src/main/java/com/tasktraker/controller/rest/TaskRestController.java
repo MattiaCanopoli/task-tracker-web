@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,6 +28,7 @@ public class TaskRestController {
 		this.tService = tService;
 	}
 
+	//READ (multiple)
 	@GetMapping("/tasks")
 	public ResponseEntity<List<Task>> getTasks(
 			@RequestParam(name = "status", required = false) String status) {
@@ -44,7 +47,8 @@ public class TaskRestController {
 
 	}
 
-	@GetMapping("/tasks/{id}")
+	//READ (single)
+	@GetMapping("/{id}")
 	public ResponseEntity<Task> test(@PathVariable("id") Long id) {
 
 		Task t = tService.getByID(id);
@@ -55,5 +59,12 @@ public class TaskRestController {
 
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
+	}
+	@PostMapping("save")
+	public Task store(@RequestBody Task task) {
+		Task newTask = task;
+		tService.save(newTask);
+		return newTask;
+		
 	}
 }
