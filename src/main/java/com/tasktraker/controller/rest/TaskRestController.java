@@ -20,11 +20,15 @@ import com.tasktraker.service.TaskService;
 @RequestMapping("/rest")
 public class TaskRestController {
 
-	@Autowired
-	TaskService tService;
+	private final TaskService tService;
+
+	public TaskRestController(TaskService tService) {
+		this.tService = tService;
+	}
 
 	@GetMapping("/tasks")
-	public ResponseEntity<List<Task>> getTasks(@RequestParam(name = "status", required = false) String status) {
+	public ResponseEntity<List<Task>> getTasks(
+			@RequestParam(name = "status", required = false) String status) {
 
 		List<Task> tasks = tService.getTasks();
 

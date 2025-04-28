@@ -12,8 +12,12 @@ import com.tasktraker.repository.TaskRepo;
 @Service
 public class TaskService {
 
-	@Autowired
-	private TaskRepo taskRepo;
+
+	private final TaskRepo taskRepo;
+	
+	public TaskService (TaskRepo taskRepo) {
+		this.taskRepo=taskRepo;
+	}
 
 	/**
 	 * retrieve all tasks from the task table in task_tracker_web DB
