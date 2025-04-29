@@ -50,7 +50,7 @@ public class TaskRestController {
 
 	// READ (single)
 	@GetMapping("/{id}")
-	public ResponseEntity<Task> getSingleTask(@PathVariable("id") Long id) {
+	public ResponseEntity<?> getSingleTask(@PathVariable("id") Long id) {
 
 		Task t = tService.getByID(id);
 
@@ -58,7 +58,7 @@ public class TaskRestController {
 			return new ResponseEntity<>(t, HttpStatus.OK);
 		}
 
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		return new ResponseEntity<>("task with id " + id + " not found",HttpStatus.NOT_FOUND);
 
 	}
 	// @PostMapping("save")
@@ -70,11 +70,11 @@ public class TaskRestController {
 	// }
 
 	@PostMapping("save")
-	public ResponseEntity<Task> store(@RequestBody DTOTask dtoTask) {
+	public ResponseEntity<?> store(@RequestBody DTOTask dtoTask) {
 		Task task = tService.createFromDTO(dtoTask);
 
 		if (task == null) {
-			return new ResponseEntity<Task>(HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>("missing fields",HttpStatus.BAD_REQUEST);
 		}
 		tService.save(task);
 		return new ResponseEntity<Task>(task, HttpStatus.CREATED);
