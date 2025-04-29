@@ -1,9 +1,9 @@
 package com.tasktraker.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.tasktraker.model.Status;
@@ -15,9 +15,12 @@ public class TaskService {
 
 
 	private final TaskRepo taskRepo;
+	private final StatusService statusService;
+
 	
-	public TaskService (TaskRepo taskRepo) {
+	public TaskService (TaskRepo taskRepo, StatusService statusService) {
 		this.taskRepo=taskRepo;
+		this.statusService=statusService;
 	}
 
 	/**
@@ -32,6 +35,18 @@ public class TaskService {
 //	public List<Task> getByStatus(Status status) {
 //		return taskRepo.findByStatusContains(status);
 //	}
+	
+	public List<Task> getByStatusName(String statusName){
+		Status status=statusService.findStatusByName(statusName);
+		
+		List<Task> tasks=new ArrayList<>();
+		if (status!=null) {
+			tasks=taskRepo.findByStatusId(status.getId());
+		}
+		
+		return tasks;
+		
+	}
 
 	public Task getByID(long id) {
 		Optional<Task> t = taskRepo.findById(id);
