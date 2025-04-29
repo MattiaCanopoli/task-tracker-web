@@ -17,43 +17,40 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotEmpty;
 
-
 @Entity
 public class Task {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-	
+
 	@NotEmpty
-	@Column(nullable=false)
+	@Column(nullable = false)
 	private String description;
-	
 
 	@CreationTimestamp
-	@Column(nullable=false)
+	@Column(nullable = false)
 	private Timestamp createdAt;
-	
 
 	@UpdateTimestamp
-	@Column(nullable=false)
+	@Column(nullable = false)
 	private Timestamp updatedAt;
-	
+
 	@Nullable
-	@Column(nullable=true)
+	@Column(nullable = true)
 	private Timestamp completedAt;
-	
+
 	@NotEmpty
-	@Column(nullable=false)
+	@Column(nullable = false)
 	private String user;
-	
+
 	@ManyToOne
 	@JsonManagedReference
-	@JoinColumn(name="status_id")
+	@JoinColumn(name = "status_id")
 	private Status status;
-	
+
 	public Task() {
-		
+
 	}
 
 	public long getId() {
@@ -111,7 +108,6 @@ public class Task {
 	public void setStatus(Status status) {
 		this.status = status;
 	}
-	
 	
 
 }
