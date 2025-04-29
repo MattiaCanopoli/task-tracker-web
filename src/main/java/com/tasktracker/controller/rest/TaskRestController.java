@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tasktracker.dto.DTOTask;
 import com.tasktracker.model.Task;
 import com.tasktracker.service.TaskService;
 
@@ -26,7 +27,7 @@ public class TaskRestController {
 		this.tService = tService;
 	}
 
-	//READ (multiple)
+	// READ (multiple)
 	@GetMapping("/tasks")
 	public ResponseEntity<List<Task>> getTasks(
 			@RequestParam(name = "status", required = false) String status) {
@@ -35,8 +36,8 @@ public class TaskRestController {
 
 		if (status != null && !status.isEmpty()) {
 
-				tasks = tService.getByStatusName(status);
-			
+			tasks = tService.getByStatusName(status);
+
 		}
 
 		if (tasks.size() == 0) {
@@ -47,7 +48,7 @@ public class TaskRestController {
 
 	}
 
-	//READ (single)
+	// READ (single)
 	@GetMapping("/{id}")
 	public ResponseEntity<Task> getSingleTask(@PathVariable("id") Long id) {
 
@@ -60,11 +61,23 @@ public class TaskRestController {
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
 	}
+	// @PostMapping("save")
+	// public Task store(@RequestBody Task task) {
+	// Task newTask = task;
+	// tService.save(newTask);
+	// return newTask;
+	//
+	// }
+
 	@PostMapping("save")
-	public Task store(@RequestBody Task task) {
-		Task newTask = task;
-		tService.save(newTask);
-		return newTask;
-		
+	public ResponseEntity<Task> store(@RequestBody DTOTask dtoTask) {
+		Task task = tService.createFromDTO(dtoTask);
+
+		if (task == null) {
+			return new ResponseEntity<Task>(HttpStatus.BAD_REQUEST);
+		}
+		tService.save(task);
+		return new ResponseEntity<Task>(task, HttpStatus.CREATED);
+
 	}
 }
