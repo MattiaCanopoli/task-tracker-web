@@ -25,5 +25,15 @@ public class StatusService {
 
 		return status.get();
 	}
+	
+	public Status findStatusById(int statusId) {
+		Optional<Status> status = statusRepo.findById(statusId);
+
+		if (!status.isPresent()) {
+			return null;
+		}
+
+		return status.get();
+	}
 
 }
