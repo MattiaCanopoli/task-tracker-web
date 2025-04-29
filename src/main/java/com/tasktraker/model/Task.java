@@ -1,11 +1,11 @@
 package com.tasktraker.model;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
@@ -16,7 +16,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 
 
 @Entity
@@ -49,6 +48,7 @@ public class Task {
 	private String user;
 	
 	@ManyToOne
+	@JsonManagedReference
 	@JoinColumn(name="status_id")
 	private Status status;
 	
