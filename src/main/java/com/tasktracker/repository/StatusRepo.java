@@ -1,10 +1,10 @@
-package com.tasktraker.repository;
+package com.tasktracker.repository;
 
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.tasktraker.model.Status;
+import com.tasktracker.model.Status;
 
 public interface StatusRepo extends JpaRepository<Status, Integer> {
 	

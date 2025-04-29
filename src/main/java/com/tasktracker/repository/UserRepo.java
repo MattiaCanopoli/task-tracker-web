@@ -1,8 +1,8 @@
-package com.tasktraker.repository;
+package com.tasktracker.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.tasktraker.model.User;
+import com.tasktracker.model.User;
 
 public interface UserRepo extends JpaRepository<User, Long> {
 

@@ -1,4 +1,4 @@
-package com.tasktraker.model;
+package com.tasktracker.model;
 
 import java.util.List;
 

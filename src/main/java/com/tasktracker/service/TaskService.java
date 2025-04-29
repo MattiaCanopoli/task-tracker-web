@@ -1,4 +1,4 @@
-package com.tasktraker.service;
+package com.tasktracker.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,9 +6,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.tasktraker.model.Status;
-import com.tasktraker.model.Task;
-import com.tasktraker.repository.TaskRepo;
+import com.tasktracker.model.Status;
+import com.tasktracker.model.Task;
+import com.tasktracker.repository.TaskRepo;
 
 @Service
 public class TaskService {

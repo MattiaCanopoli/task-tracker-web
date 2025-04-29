@@ -1,4 +1,4 @@
-package com.tasktraker.controller.rest;
+package com.tasktracker.controller.rest;
 
 import java.util.List;
 
@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tasktraker.model.Task;
-import com.tasktraker.service.TaskService;
+import com.tasktracker.model.Task;
+import com.tasktracker.service.TaskService;
 
 //@CrossOrigin
 @RestController

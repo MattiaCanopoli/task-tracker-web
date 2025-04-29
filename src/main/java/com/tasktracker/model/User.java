@@ -1,4 +1,4 @@
-package com.tasktraker.model;
+package com.tasktracker.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
