@@ -49,7 +49,7 @@ public class TaskRestController {
 
 	//READ (single)
 	@GetMapping("/{id}")
-	public ResponseEntity<Task> test(@PathVariable("id") Long id) {
+	public ResponseEntity<Task> getSingleTask(@PathVariable("id") Long id) {
 
 		Task t = tService.getByID(id);
 
