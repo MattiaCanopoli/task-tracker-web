@@ -39,6 +39,10 @@ public class Task {
 	@Nullable
 	@Column(nullable = true)
 	private Timestamp completedAt;
+	
+	@Nullable
+	@Column(nullable=true)
+	private Timestamp deletedAt;
 
 	@NotEmpty
 	@Column(nullable = false)
@@ -91,6 +95,14 @@ public class Task {
 
 	public void setCompletedAt(Timestamp completedAt) {
 		this.completedAt = completedAt;
+	}
+
+	public Timestamp getDeletedAt() {
+		return deletedAt;
+	}
+
+	public void setDeletedAt(Timestamp deletedAt) {
+		this.deletedAt = deletedAt;
 	}
 
 	public String getUser() {
