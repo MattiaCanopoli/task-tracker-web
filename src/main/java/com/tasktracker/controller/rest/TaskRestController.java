@@ -40,16 +40,18 @@ public class TaskRestController {
 	 * @return a List of tasks and HttpStatus 200(OK) or HttpStatus
 	 *         204(NO_CONTENT) if no tasks are retrieved.
 	 */
-	@GetMapping("/")
-	public ResponseEntity<List<Task>> getTasks(
+	@GetMapping("/tasks")
+	public ResponseEntity<List<Task>> list(
 			@RequestParam(name = "status", required = false) String status) {
 
-		List<Task> tasks = tService.getTasks();
+		List<Task> tasks;
 
 		if (status != null && !status.isEmpty()) {
 
 			tasks = tService.getByStatusName(status);
 
+		} else {
+			tasks = tService.getTasks();
 		}
 
 		if (tasks.size() == 0) {
@@ -70,8 +72,8 @@ public class TaskRestController {
 	 * @return HttpStatus 200(OK) and task having the provided id, or HttpStatus
 	 *         404(NOT_FOUND) and an error message if the task is not found.
 	 */
-	@GetMapping("/{id}")
-	public ResponseEntity<?> getSingleTask(@PathVariable("id") Long id) {
+	@GetMapping("tasks/{id}")
+	public ResponseEntity<?> detail(@PathVariable("id") Long id) {
 
 		Task t = tService.getByID(id);
 
@@ -99,8 +101,8 @@ public class TaskRestController {
 	 *         (BAD_REQUEST) and error message if JSON does not contain all the
 	 *         fields.
 	 */
-	@PostMapping("save")
-	public ResponseEntity<?> store(@RequestBody DTOTask dtoTask) {
+	@PostMapping("/tasks")
+	public ResponseEntity<?> create(@RequestBody DTOTask dtoTask) {
 		Task task = tService.createFromDTO(dtoTask);
 
 		if (task == null) {
@@ -123,9 +125,10 @@ public class TaskRestController {
 	 * @return HttpStatus 200 (OK) and updated task or HttpStatus 404
 	 *         (NOT_FOUND) if task is not found.
 	 */
-	@PatchMapping("update")
-	public ResponseEntity<?> update(@RequestBody DTOTask dtoTask) {
-		Task task = tService.getByID(dtoTask.getId());
+	@PatchMapping("tasks/{id}")
+	public ResponseEntity<?> update(@PathVariable("id") long id,
+			@RequestBody DTOTask dtoTask) {
+		Task task = tService.getByID(id);
 
 		if (task == null) {
 			return new ResponseEntity<>(
@@ -148,7 +151,7 @@ public class TaskRestController {
 	 * @return HttpStatus 200 (OK) and confirmation message or HttpStatus 404
 	 *         (NOT_FOUND) and error message if task is not found.
 	 */
-	@DeleteMapping("delete/{id}")
+	@DeleteMapping("tasks/{id}")
 	public ResponseEntity<String> delete(@PathVariable("id") long id) {
 
 		String message = "Task with ID " + id + " not found";
