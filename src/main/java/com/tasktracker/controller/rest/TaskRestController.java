@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -120,6 +121,30 @@ public class TaskRestController {
 		return new ResponseEntity<Task>(task,HttpStatus.OK);
 		
 		}
+	}
+	//DELETE
+	
+	/**
+	 * Marks the task having the provided ID as "DELETED".
+	 * @param id Long id of the task to be deleted
+	 * @return HttpStatus 200 (OK) and confirmation message
+	 * @return HttpStatus 404 (NOT_FOUND) and error message if the provided id is not valid
+	 */
+	@DeleteMapping("delete/{id}")
+	public ResponseEntity<String> delete(@PathVariable("id") long id){
+		
+		String message= "Task with ID " + id + " not found";
+		
+		Task task = tService.getByID(id);
+		
+		if (task!=null) {
+			message = tService.markAsDeleted(task);
+			return new ResponseEntity<String>(message, HttpStatus.OK);
+		}
+		
+		return new ResponseEntity<String>(message, HttpStatus.NOT_FOUND);
+		
+		
 	}
 
 }

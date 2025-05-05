@@ -35,11 +35,13 @@ public class TaskService {
 	}
 
 	/**
-	 * statusName argument is used to retrieve the corresponding Status object and then the corresponding id.
-	 * A new ArrayList of Task is created and filled with tasks having the corresponding statusId.
-	 * If there are no task with such statusId the list remains empty.
-	 * Returns the list
-	 * @param statusName a String corresponding to the status to filter
+	 * statusName argument is used to retrieve the corresponding Status object
+	 * and then the corresponding id. A new ArrayList of Task is created and
+	 * filled with tasks having the corresponding statusId. If there are no task
+	 * with such statusId the list remains empty. Returns the list
+	 * 
+	 * @param statusName
+	 *            a String corresponding to the status to filter
 	 * @return a list of tasks. an empty list can be returned.
 	 */
 	public List<Task> getByStatusName(String statusName) {
@@ -55,9 +57,11 @@ public class TaskService {
 	}
 
 	/**
-	 * Retrieve the task with the provided ID.
-	 * Return such task if exists, else return null
-	 * @param id long of the task to find
+	 * Retrieve the task with the provided ID. Return such task if exists, else
+	 * return null
+	 * 
+	 * @param id
+	 *            long of the task to find
 	 * @return found task
 	 * @return null if nothing found
 	 */
@@ -72,70 +76,90 @@ public class TaskService {
 
 	/**
 	 * Persists the provided Task into task_tracker_web DB
-	 * @param task object to persist
+	 * 
+	 * @param task
+	 *            object to persist
 	 */
 	public void save(Task task) {
 		taskRepo.save(task);
 	}
 
 	/**
-	 * Checks if DTO fields (description, statusID, user) are present.
-	 * If any of the fields is missing, returns null.
-	 * Creates a new Task.
-	 * Task fields  are filled with the corresponding ones in the DTO.
-	 * ID and date fields (createdAt, updatedAt) are automatically generated.
-	 * Persists newly created Task instance to the DB
-	 * @param dtoTask an object representing a simplified version of a Task Object. Stores the values to be passed to the Task object.
+	 * Checks if DTO fields (description, statusID, user) are present. If any of
+	 * the fields is missing, returns null. Creates a new Task. Task fields are
+	 * filled with the corresponding ones in the DTO. ID and date fields
+	 * (createdAt, updatedAt) are automatically generated. Persists newly
+	 * created Task instance to the DB
+	 * 
+	 * @param dtoTask
+	 *            an object representing a simplified version of a Task Object.
+	 *            Stores the values to be passed to the Task object.
 	 * @return newly created task
 	 * @return null if any of the field in the DTO is missing
 	 */
 	public Task createFromDTO(DTOTask dtoTask) {
-		if ((dtoTask.getDescription()!=null && 
-				!dtoTask.getDescription().isEmpty()) &&
-				(dtoTask.getStatus_id()!=0) &&
-				(dtoTask.getUser()!=null) && 
-				!dtoTask.getUser().isEmpty()){
+		if ((dtoTask.getDescription() != null
+				&& !dtoTask.getDescription().isEmpty())
+				&& (dtoTask.getStatus_id() != 0) && (dtoTask.getUser() != null)
+				&& !dtoTask.getUser().isEmpty()) {
 			Task task = new Task();
 			task.setDescription(dtoTask.getDescription());
-			task.setStatus(statusService.findStatusById(dtoTask.getStatus_id()));
+			task.setStatus(
+					statusService.findStatusById(dtoTask.getStatus_id()));
 			task.setUser(dtoTask.getUser());
 			taskRepo.save(task);
 			return task;
-		} 
+		}
 		return null;
 	}
-	
+
 	/**
-	 * Gets description and Status from the DTO.
-	 * If any of the field is present, updates the provided task with the new values.
-	 * If DTO's statusID is 3 ("done"), completedAt value is updated to the current timestamp. 
+	 * Gets description and Status from the DTO. If any of the field is present,
+	 * updates the provided task with the new values. If DTO's statusID is 3
+	 * ("done"), completedAt value is updated to the current timestamp.
 	 * UpdatedAt value if automatically updated to the current timestamp.
-	 * Persists the new values in the DB. 
-	 * @param task the task object to be updated
-	 * @param dto an object representing a simplified version of a Task Object. Stores the values to be passed to the Task object.
+	 * Persists the new values in the DB.
+	 * 
+	 * @param task
+	 *            the task object to be updated
+	 * @param dto
+	 *            an object representing a simplified version of a Task Object.
+	 *            Stores the values to be passed to the Task object.
 	 * @return updated task.
 	 * @return same task if there are no updates.
 	 */
 	public Task update(Task task, DTOTask dto) {
-		
+
 		String newDescr = dto.getDescription();
-		int newStat=dto.getStatus_id();
-		
-		if (newDescr!=null) {
+		int newStat = dto.getStatus_id();
+
+		if (newDescr != null) {
 			task.setDescription(newDescr);
 		}
-		
-		if (newStat>0 && newStat<4) {
+
+		if (newStat > 0 && newStat < 4) {
 			task.setStatus(statusService.findStatusById(newStat));
-			
-			if (newStat ==3) {
+
+			if (newStat == 3) {
 				task.setCompletedAt(Timestamp.valueOf(LocalDateTime.now()));
 			}
 		}
 		taskRepo.save(task);
 		return task;
-		
+
 	}
 
+	/**
+	 * Sets Status of the provided task to DELETED (id: 4) and deletedAt value is updated to current timestamp.
+	 * New values are persisted to DB.
+	 * @param task task instance to be deleted
+	 * @return a confirmation message
+	 */
+	public String markAsDeleted(Task task) {
+		task.setStatus(statusService.findStatusById(4));
+		task.setDeletedAt(Timestamp.valueOf(LocalDateTime.now()));
+		taskRepo.save(task);
+		return "Task with ID " + task.getId() + " has been marked as \"DELETED\"";
+	}
 
 }
