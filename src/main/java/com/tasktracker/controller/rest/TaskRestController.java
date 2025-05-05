@@ -36,7 +36,7 @@ public class TaskRestController {
 	 * @return a List of tasks and HttpStatus 200(OK). 
 	 * @return HttpStatus 204(NO_CONTENT) if no tasks are retrieved.
 	 */
-	@GetMapping("/tasks")
+	@GetMapping("/")
 	public ResponseEntity<List<Task>> getTasks(
 			@RequestParam(name = "status", required = false) String status) {
 
