@@ -16,6 +16,12 @@ public class StatusService {
 		this.statusRepo = statusRepo;
 	}
 
+	/**
+	 * Retrieve a status object by its name.
+	 * @param statusName
+	 * @return a Status object
+	 * @return null if there is no Status object with such name
+	 */
 	public Status findStatusByName(String statusName) {
 		Optional<Status> status = statusRepo.findByStatusName(statusName);
 
@@ -26,6 +32,12 @@ public class StatusService {
 		return status.get();
 	}
 	
+	/**
+	 * Retrieves a status by its ID
+	 * @param statusId
+	 * @return a Status object
+	 * @return null if there is no Status object with such ID
+	 */
 	public Status findStatusById(int statusId) {
 		Optional<Status> status = statusRepo.findById(statusId);
 

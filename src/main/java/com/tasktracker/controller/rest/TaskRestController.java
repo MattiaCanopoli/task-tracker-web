@@ -28,7 +28,14 @@ public class TaskRestController {
 		this.tService = tService;
 	}
 
-	// READ (multiple)
+	//READ (multiple)
+	/**
+	 * Retrieves a list of tasks.
+	 * This list can be filtered by status. if status is not provided, all the list are retrieved.
+	 * @param status a String representing the status name ("to-do", "in-progress","done")
+	 * @return a List of tasks and HttpStatus 200(OK). 
+	 * @return HttpStatus 204(NO_CONTENT) if no tasks are retrieved.
+	 */
 	@GetMapping("/tasks")
 	public ResponseEntity<List<Task>> getTasks(
 			@RequestParam(name = "status", required = false) String status) {
@@ -49,7 +56,15 @@ public class TaskRestController {
 
 	}
 
-	// READ (single)
+	//SHOW
+	
+	/**
+	 * Retrieves the task with the provided ID
+	 * 
+	 * @param id long of the task to find
+	 * @return task with the provided id and HttpStatus 200(OK); 
+	 * @return HttpStatus 404(NOT_FOUND) and an error message if the task does not exists.
+	 */
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getSingleTask(@PathVariable("id") Long id) {
 
@@ -63,6 +78,16 @@ public class TaskRestController {
 
 	}
 
+	//CREATE
+	
+	/**
+	 * Creates and persists a new task.
+	 * RequestBody is a DTO containing data ("description", "status_id" and "user") to be passed to the new task.
+	 * if any of the field is missing, return HttpStasus 400 (BAD_REQUEST) and an error message.
+	 * @param dtoTask RequestBody: a JSON containing "description", "status_id" and "user"
+	 * @return HttpStatus 201 (CREATED) and newly created task.
+	 * @return HttpStatus 400 (BAD_REQUEST) and error message if JSON doesn't contains all the fields.
+	 */
 	@PostMapping("save")
 	public ResponseEntity<?> store(@RequestBody DTOTask dtoTask) {
 		Task task = tService.createFromDTO(dtoTask);
@@ -74,7 +99,16 @@ public class TaskRestController {
 		return new ResponseEntity<Task>(task, HttpStatus.CREATED);
 
 	}
+	//UPDATE
 	
+	/**
+	 * Updates an existing task.
+	 * The task to update is retrieved by id, provided via DTO.
+	 * If the provided id is not valid, returns and error message.
+	 * @param dtoTask RequestBody: a JSON containing "description", "status_id" and "id"
+	 * @return HttpStatus 200 (OK) and updated task.
+	 * @return HttpStatus 404 (NOT_FOUND) if id provided via JSON is not valid.
+	 */
 	@PatchMapping("update")
 	public ResponseEntity<?> update(@RequestBody DTOTask dtoTask){
 		Task task = tService.getByID(dtoTask.getId());
