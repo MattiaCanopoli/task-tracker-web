@@ -58,26 +58,20 @@ public class TaskRestController {
 			return new ResponseEntity<>(t, HttpStatus.OK);
 		}
 
-		return new ResponseEntity<>("task with id " + id + " not found",HttpStatus.NOT_FOUND);
+		return new ResponseEntity<>("task with ID " + id + " not found",HttpStatus.NOT_FOUND);
 
 	}
-	// @PostMapping("save")
-	// public Task store(@RequestBody Task task) {
-	// Task newTask = task;
-	// tService.save(newTask);
-	// return newTask;
-	//
-	// }
 
 	@PostMapping("save")
 	public ResponseEntity<?> store(@RequestBody DTOTask dtoTask) {
 		Task task = tService.createFromDTO(dtoTask);
 
 		if (task == null) {
-			return new ResponseEntity<>("missing fields",HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>("missing fields.\nFields \"description\", \"status_id\" and \"user\" must be specified.",HttpStatus.BAD_REQUEST);
 		}
 		tService.save(task);
 		return new ResponseEntity<Task>(task, HttpStatus.CREATED);
 
 	}
+
 }
