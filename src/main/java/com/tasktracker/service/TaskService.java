@@ -84,6 +84,7 @@ public class TaskService {
 	 * Creates a new Task.
 	 * Task fields  are filled with the corresponding ones in the DTO.
 	 * ID and date fields (createdAt, updatedAt) are automatically generated.
+	 * Persists newly created Task instance to the DB
 	 * @param dtoTask an object representing a simplified version of a Task Object. Stores the values to be passed to the Task object.
 	 * @return newly created task
 	 * @return null if any of the field in the DTO is missing
@@ -98,6 +99,7 @@ public class TaskService {
 			task.setDescription(dtoTask.getDescription());
 			task.setStatus(statusService.findStatusById(dtoTask.getStatus_id()));
 			task.setUser(dtoTask.getUser());
+			taskRepo.save(task);
 			return task;
 		} 
 		return null;

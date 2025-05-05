@@ -95,7 +95,6 @@ public class TaskRestController {
 		if (task == null) {
 			return new ResponseEntity<>("missing fields.\nFields \"description\", \"status_id\" and \"user\" must be specified.",HttpStatus.BAD_REQUEST);
 		}
-		tService.save(task);
 		return new ResponseEntity<Task>(task, HttpStatus.CREATED);
 
 	}
