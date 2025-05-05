@@ -1,5 +1,7 @@
 package com.tasktracker.service;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -73,6 +75,27 @@ public class TaskService {
 			return task;
 		} 
 		return null;
+	}
+	
+	public Task update(Task task, DTOTask dto) {
+		
+		String newDescr = dto.getDescription();
+		int newStat=dto.getStatus_id();
+		
+		if (newDescr!=null) {
+			task.setDescription(newDescr);
+		}
+		
+		if (newStat>0 && newStat<4) {
+			task.setStatus(statusService.findStatusById(newStat));
+			
+			if (newStat ==3) {
+				task.setCompletedAt(Timestamp.valueOf(LocalDateTime.now()));
+			}
+		}
+		taskRepo.save(task);
+		return task;
+		
 	}
 
 

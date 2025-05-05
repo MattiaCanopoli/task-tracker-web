@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -72,6 +73,20 @@ public class TaskRestController {
 		tService.save(task);
 		return new ResponseEntity<Task>(task, HttpStatus.CREATED);
 
+	}
+	
+	@PatchMapping("update")
+	public ResponseEntity<?> update(@RequestBody DTOTask dtoTask){
+		Task task = tService.getByID(dtoTask.getId());
+		
+		if (task==null) {
+			return new ResponseEntity<>("Task with ID " + dtoTask.getId() + " not found", HttpStatus.NOT_FOUND);
+		} else {
+		
+			tService.update(task, dtoTask);
+		return new ResponseEntity<Task>(task,HttpStatus.OK);
+		
+		}
 	}
 
 }
