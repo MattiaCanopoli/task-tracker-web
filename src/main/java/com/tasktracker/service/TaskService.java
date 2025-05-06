@@ -15,7 +15,6 @@ import com.tasktracker.repository.TaskRepo;
 
 @Service
 public class TaskService {
-
 	private final TaskRepo taskRepo;
 	private final StatusService statusService;
 
@@ -27,8 +26,7 @@ public class TaskService {
 	/**
 	 * Retrieves all tasks from the task table in task_tracker_web DB
 	 * 
-	 * @return a List of every task
-	 * @return an empty List if there are no tasks
+	 * @return a List of every task or an empty List if there are no tasks
 	 */
 	public List<Task> getTasks() {
 		return taskRepo.findAll();
@@ -57,13 +55,12 @@ public class TaskService {
 	}
 
 	/**
-	 * Retrieve the task with the provided ID. Return such task if exists, else
+	 * Retrieve the task with the provided ID. Returns the task if exists, else
 	 * return null
 	 * 
 	 * @param id
 	 *            long of the task to find
-	 * @return found task
-	 * @return null if nothing found
+	 * @return found task or null if nothing found
 	 */
 	public Task getByID(long id) {
 		Optional<Task> t = taskRepo.findById(id);
@@ -94,8 +91,8 @@ public class TaskService {
 	 * @param dtoTask
 	 *            an object representing a simplified version of a Task Object.
 	 *            Stores the values to be passed to the Task object.
-	 * @return newly created task
-	 * @return null if any of the field in the DTO is missing
+	 * @return newly created task or null if any required field in the DTO is
+	 *         missing
 	 */
 	public Task createFromDTO(DTOTask dtoTask) {
 		if ((dtoTask.getDescription() != null
@@ -125,8 +122,7 @@ public class TaskService {
 	 * @param dto
 	 *            an object representing a simplified version of a Task Object.
 	 *            Stores the values to be passed to the Task object.
-	 * @return updated task.
-	 * @return same task if there are no updates.
+	 * @return updated task or same task if there are no updates.
 	 */
 	public Task update(Task task, DTOTask dto) {
 
@@ -150,16 +146,19 @@ public class TaskService {
 	}
 
 	/**
-	 * Sets Status of the provided task to DELETED (id: 4) and deletedAt value is updated to current timestamp.
-	 * New values are persisted to DB.
-	 * @param task task instance to be deleted
+	 * Sets Status of the provided task to DELETED (id: 4) and deletedAt value
+	 * is updated to current timestamp. New values are persisted to DB.
+	 * 
+	 * @param task
+	 *            task instance to be deleted
 	 * @return a confirmation message
 	 */
 	public String markAsDeleted(Task task) {
 		task.setStatus(statusService.findStatusById(4));
 		task.setDeletedAt(Timestamp.valueOf(LocalDateTime.now()));
 		taskRepo.save(task);
-		return "Task with ID " + task.getId() + " has been marked as \"DELETED\"";
+		return "Task with ID " + task.getId()
+				+ " has been marked as \"DELETED\"";
 	}
 
 }
