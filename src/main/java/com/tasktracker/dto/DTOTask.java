@@ -3,13 +3,12 @@ package com.tasktracker.dto;
 import java.sql.Timestamp;
 
 public class DTOTask {
-	
+
 	private long id;
 	private String description;
 	private int status_id;
 	private String user;
 	private Timestamp completedAt;
-	
 
 	public String getDescription() {
 		return description;
@@ -50,10 +49,11 @@ public class DTOTask {
 	public void setCompletedAt(Timestamp completedAt) {
 		this.completedAt = completedAt;
 	}
-	
-	
-	
-	
-	
+
+	@Override
+	public String toString() {
+		return "DTOTask [id=" + id + ", description=" + description + ", user="
+				+ user + ", status_id=" + status_id + "]";
+	}
 
 }
