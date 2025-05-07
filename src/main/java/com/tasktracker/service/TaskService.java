@@ -38,7 +38,6 @@ public class TaskService {
 		return taskRepo.findAll();
 	}
 
-	//TODO: implement status validation
 	/**
 	 * statusName argument is used to retrieve the corresponding Status object
 	 * and then the corresponding id. A new ArrayList of Task is created and
@@ -49,14 +48,22 @@ public class TaskService {
 	 *            a String corresponding to the status to filter
 	 * @return a list of tasks. an empty list can be returned.
 	 */
-	public List<Task> getByStatusName(String statusName) {
-		logger.info("Attempting to retrieve tasks with status {}", statusName);
+	public List<Task> getByStatusName(String statusName)
+			throws IllegalArgumentException {
+		logger.info("Attempting to retrieve tasks with status \"{}\"", statusName);
+		if (!statusService.isStatusValid(statusName.toUpperCase())) {
+			logger.error("Status \"{}\" is not valid",statusName);
+			throw new IllegalArgumentException(
+					statusName + " is not a valid status");
+		}
+
 		Status status = statusService.findStatusByName(statusName);
 
 		List<Task> tasks = new ArrayList<>();
 		if (status != null) {
 			tasks = taskRepo.findByStatusId(status.getId());
 		}
+		logger.info("Retrieved {} tasks with status \"{}\"",tasks.size(),statusName);
 		return tasks;
 
 	}
@@ -90,11 +97,11 @@ public class TaskService {
 	 */
 	public void save(Task task) {
 		taskRepo.save(task);
-		logger.info("Task with ID: {} has been saved",task.getId());
+		logger.info("Task with ID: {} has been saved", task.getId());
 	}
 
-	//TODO: implement status validation
-	//TODO: implement DTO validation
+	// TODO: implement status validation
+	// TODO: implement DTO validation
 	/**
 	 * Checks if DTO fields (description, statusID, user) are present. If any of
 	 * the fields is missing, returns null. Creates a new Task. Task fields are
@@ -147,25 +154,27 @@ public class TaskService {
 
 		String newDescr = dto.getDescription();
 		int newStat = dto.getStatus_id();
-		
-		boolean hasUpdated=false;
+
+		boolean hasUpdated = false;
 
 		if (newDescr != null) {
 			task.setDescription(newDescr);
-			logger.info("Description of task {} has been updated to \"{}\"",task.getId(),task.getDescription());
-			hasUpdated=true;
+			logger.info("Description of task {} has been updated to \"{}\"",
+					task.getId(), task.getDescription());
+			hasUpdated = true;
 		} else {
 			logger.warn("Description is empty");
 		}
 
 		if (newStat > 0 && newStat < 4) {
 			task.setStatus(statusService.findStatusById(newStat));
-			logger.info("Status of task {} has been marked as \"{}\"",task.getId(),task.getStatus().getStatusName());
+			logger.info("Status of task {} has been marked as \"{}\"",
+					task.getId(), task.getStatus().getStatusName());
 			if (newStat == 3) {
 				task.setCompletedAt(Timestamp.valueOf(LocalDateTime.now()));
 			}
 		} else {
-			logger.warn("Status with id {} is not valid",dto.getStatus_id());
+			logger.warn("Status with id {} is not valid", dto.getStatus_id());
 		}
 		taskRepo.save(task);
 		return task;
