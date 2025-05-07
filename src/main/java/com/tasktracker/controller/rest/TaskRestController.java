@@ -18,6 +18,8 @@ import com.tasktracker.dto.DTOTask;
 import com.tasktracker.model.Task;
 import com.tasktracker.service.TaskService;
 
+import ch.qos.logback.classic.Logger;
+
 //@CrossOrigin
 @RestController
 @RequestMapping("/rest")
@@ -41,15 +43,18 @@ public class TaskRestController {
 	 *         204(NO_CONTENT) if no tasks are retrieved.
 	 */
 	@GetMapping("/tasks")
-	public ResponseEntity<List<Task>> list(
+	public ResponseEntity<?> list(
 			@RequestParam(name = "status", required = false) String status) {
-
 		List<Task> tasks;
 
 		if (status != null && !status.isEmpty()) {
 
-			tasks = tService.getByStatusName(status);
-
+			try {
+				tasks = tService.getByStatusName(status);
+			} catch (IllegalArgumentException e) {
+				return new ResponseEntity<>(e.getMessage(),
+						HttpStatus.BAD_REQUEST);
+			}
 		} else {
 			tasks = tService.getTasks();
 		}
