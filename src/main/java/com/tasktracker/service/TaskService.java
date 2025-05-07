@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.tasktracker.dto.DTOTask;
@@ -15,6 +17,9 @@ import com.tasktracker.repository.TaskRepo;
 
 @Service
 public class TaskService {
+
+	private static final Logger logger = LoggerFactory
+			.getLogger(TaskService.class);
 	private final TaskRepo taskRepo;
 	private final StatusService statusService;
 
@@ -29,9 +34,11 @@ public class TaskService {
 	 * @return a List of every task or an empty List if there are no tasks
 	 */
 	public List<Task> getTasks() {
+		logger.info("Attempting to retrieve all tasks");
 		return taskRepo.findAll();
 	}
 
+	//TODO: implement status validation
 	/**
 	 * statusName argument is used to retrieve the corresponding Status object
 	 * and then the corresponding id. A new ArrayList of Task is created and
@@ -43,13 +50,13 @@ public class TaskService {
 	 * @return a list of tasks. an empty list can be returned.
 	 */
 	public List<Task> getByStatusName(String statusName) {
+		logger.info("Attempting to retrieve tasks with status {}", statusName);
 		Status status = statusService.findStatusByName(statusName);
 
 		List<Task> tasks = new ArrayList<>();
 		if (status != null) {
 			tasks = taskRepo.findByStatusId(status.getId());
 		}
-
 		return tasks;
 
 	}
@@ -63,11 +70,15 @@ public class TaskService {
 	 * @return found task or null if nothing found
 	 */
 	public Task getByID(long id) {
+		logger.info("Attempting to retrieve task with id {}", id);
 		Optional<Task> t = taskRepo.findById(id);
 
 		if (t.isPresent()) {
+			logger.info("Task with id {} found. Task description: {}", id,
+					t.get().getDescription());
 			return t.get();
 		}
+		logger.warn("Task with id {} not found", id);
 		return null;
 	}
 
@@ -79,8 +90,11 @@ public class TaskService {
 	 */
 	public void save(Task task) {
 		taskRepo.save(task);
+		logger.info("Task with ID: {} has been saved",task.getId());
 	}
 
+	//TODO: implement status validation
+	//TODO: implement DTO validation
 	/**
 	 * Checks if DTO fields (description, statusID, user) are present. If any of
 	 * the fields is missing, returns null. Creates a new Task. Task fields are
@@ -95,6 +109,7 @@ public class TaskService {
 	 *         missing
 	 */
 	public Task createFromDTO(DTOTask dtoTask) {
+		logger.info("Creating Task from DTO: {}", dtoTask);
 		if ((dtoTask.getDescription() != null
 				&& !dtoTask.getDescription().isEmpty())
 				&& (dtoTask.getStatus_id() != 0) && (dtoTask.getUser() != null)
@@ -105,8 +120,12 @@ public class TaskService {
 					statusService.findStatusById(dtoTask.getStatus_id()));
 			task.setUser(dtoTask.getUser());
 			taskRepo.save(task);
+			logger.info("Task successfully created with ID: {}", task.getId());
 			return task;
 		}
+		logger.error(
+				"Failed to create Task - missing required fields in DTO: {}",
+				dtoTask);
 		return null;
 	}
 
@@ -128,17 +147,25 @@ public class TaskService {
 
 		String newDescr = dto.getDescription();
 		int newStat = dto.getStatus_id();
+		
+		boolean hasUpdated=false;
 
 		if (newDescr != null) {
 			task.setDescription(newDescr);
+			logger.info("Description of task {} has been updated to \"{}\"",task.getId(),task.getDescription());
+			hasUpdated=true;
+		} else {
+			logger.warn("Description is empty");
 		}
 
 		if (newStat > 0 && newStat < 4) {
 			task.setStatus(statusService.findStatusById(newStat));
-
+			logger.info("Status of task {} has been marked as \"{}\"",task.getId(),task.getStatus().getStatusName());
 			if (newStat == 3) {
 				task.setCompletedAt(Timestamp.valueOf(LocalDateTime.now()));
 			}
+		} else {
+			logger.warn("Status with id {} is not valid",dto.getStatus_id());
 		}
 		taskRepo.save(task);
 		return task;
@@ -157,6 +184,7 @@ public class TaskService {
 		task.setStatus(statusService.findStatusById(4));
 		task.setDeletedAt(Timestamp.valueOf(LocalDateTime.now()));
 		taskRepo.save(task);
+		logger.info("Task with id {} has beed marked as \"DELETED\"");
 		return "Task with ID " + task.getId()
 				+ " has been marked as \"DELETED\"";
 	}
