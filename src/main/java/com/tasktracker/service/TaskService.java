@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -50,11 +51,13 @@ public class TaskService {
 	 */
 	public List<Task> getByStatusName(String statusName)
 			throws IllegalArgumentException {
-		logger.info("Attempting to retrieve tasks with status \"{}\"", statusName);
+		logger.info("Attempting to retrieve tasks with status \"{}\"",
+				statusName);
 		if (!statusService.isStatusValid(statusName.toUpperCase())) {
-			logger.error("Status \"{}\" is not valid",statusName);
-			throw new IllegalArgumentException ("Status \"" + statusName + "\" is not valid");
-			
+
+			throw new IllegalArgumentException(
+					"Status \"" + statusName + "\" is not valid");
+
 		}
 
 		Status status = statusService.findStatusByName(statusName);
@@ -63,7 +66,8 @@ public class TaskService {
 		if (status != null) {
 			tasks = taskRepo.findByStatusId(status.getId());
 		}
-		logger.info("Retrieved {} tasks with status \"{}\"",tasks.size(),statusName);
+		logger.info("Retrieved {} tasks with status \"{}\"", tasks.size(),
+				statusName);
 		return tasks;
 
 	}
@@ -80,13 +84,17 @@ public class TaskService {
 		logger.info("Attempting to retrieve task with id {}", id);
 		Optional<Task> t = taskRepo.findById(id);
 
-		if (t.isPresent()) {
-			logger.info("Task with id {} found. Task description: {}", id,
-					t.get().getDescription());
-			return t.get();
+		if (!t.isPresent()) {
+
+			throw new NoSuchElementException(
+					"Task with ID \"" + id + "\" does not exists");
+
 		}
-		logger.warn("Task with id {} not found", id);
-		return null;
+
+		logger.info("Task with id {} found. Task description: {}", id,
+				t.get().getDescription());
+		return t.get();
+
 	}
 
 	/**
