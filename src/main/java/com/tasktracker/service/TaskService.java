@@ -1,6 +1,5 @@
 package com.tasktracker.service;
 
-import java.security.InvalidAlgorithmParameterException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -117,26 +116,26 @@ public class TaskService {
 	 * @return newly created task or null if any required field in the DTO is
 	 *         missing
 	 */
-	public Task createFromDTO(DTOTask dtoTask) {
+	public Task createFromDTO(DTOTask dto) {
 
-		if (dtoTask.getDescription() == null
-				|| dtoTask.getDescription().isEmpty()) {
+		if (dto.getDescription() == null
+				|| dto.getDescription().isEmpty()) {
 			throw new IllegalArgumentException("Description cannot be null. Creation request failed.");
 		}
 
-		if (dtoTask.getUser() == null || dtoTask.getUser().isEmpty()) {
+		if (dto.getUser() == null || dto.getUser().isEmpty()) {
 			throw new IllegalArgumentException("User cannot be null. Creation request failed.");
 		}
 
-		if (statusService.findStatusById(dtoTask.getStatus_id()) == null) {
+		if (statusService.findStatusById(dto.getStatus_id()) == null) {
 			throw new IllegalArgumentException(
-					"Status with ID " + dtoTask.getStatus_id() +" does not exists. Creation request failed.");
+					"Status with ID " + dto.getStatus_id() +" does not exists. Creation request failed.");
 		}
 
 		Task task = new Task();
-		task.setDescription(dtoTask.getDescription());
-		task.setStatus(statusService.findStatusById(dtoTask.getStatus_id()));
-		task.setUser(dtoTask.getUser());
+		task.setDescription(dto.getDescription());
+		task.setStatus(statusService.findStatusById(dto.getStatus_id()));
+		task.setUser(dto.getUser());
 		taskRepo.save(task);
 		return task;
 	}
@@ -155,35 +154,32 @@ public class TaskService {
 	 *            Stores the values to be passed to the Task object.
 	 * @return updated task or same task if there are no updates.
 	 */
-	public Task update(Task task, DTOTask dto) {
+	public Task updateStatus(Task task, DTOTask dto) throws IllegalArgumentException {
 
-		String newDescr = dto.getDescription();
-		int newStat = dto.getStatus_id();
-
-		boolean hasUpdated = false;
-
-		if (newDescr != null) {
-			task.setDescription(newDescr);
-			logger.info("Description of task {} has been updated to \"{}\"",
-					task.getId(), task.getDescription());
-			hasUpdated = true;
-		} else {
-			logger.warn("Description is empty");
+		Status status = statusService.findStatusById(dto.getStatus_id());
+		
+		if (status == null) {
+			throw new IllegalArgumentException(
+					"Status with ID " + dto.getStatus_id() +" does not exists. Status update request failed.");
 		}
-
-		if (newStat > 0 && newStat < 4) {
-			task.setStatus(statusService.findStatusById(newStat));
-			logger.info("Status of task {} has been marked as \"{}\"",
-					task.getId(), task.getStatus().getStatusName());
-			if (newStat == 3) {
-				task.setCompletedAt(Timestamp.valueOf(LocalDateTime.now()));
-			}
-		} else {
-			logger.warn("Status with id {} is not valid", dto.getStatus_id());
-		}
+		
+		task.setStatus(status);
 		taskRepo.save(task);
+		
 		return task;
 
+	}
+	
+	public Task updateDescription(Task task, DTOTask dto) {
+		
+		if (dto.getDescription() ==null || dto.getDescription().isEmpty()) {
+			throw new IllegalArgumentException("Desciption is empty. Description update request failed");
+		}
+		
+		task.setDescription(dto.getDescription());
+		taskRepo.save(task);
+		
+		return task;
 	}
 
 	/**
