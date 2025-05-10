@@ -190,13 +190,10 @@ public class TaskService {
 	 *            task instance to be deleted
 	 * @return a confirmation message
 	 */
-	public String markAsDeleted(Task task) {
+	public void markAsDeleted(Task task) {
 		task.setStatus(statusService.findStatusById(4));
 		task.setDeletedAt(Timestamp.valueOf(LocalDateTime.now()));
 		taskRepo.save(task);
-		logger.info("Task with id {} has beed marked as \"DELETED\"");
-		return "Task with ID " + task.getId()
-				+ " has been marked as \"DELETED\"";
 	}
 
 }
