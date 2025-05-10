@@ -9,4 +9,6 @@ import com.tasktracker.model.Task;
 public interface TaskRepo extends JpaRepository<Task, Long> {
 
 	public List<Task> findByStatusId(int statusID);
+	
+	public List<Task> findByisDeletedFalse();
 }
