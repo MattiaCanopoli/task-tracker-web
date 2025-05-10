@@ -53,8 +53,8 @@ public class TaskService {
 		logger.info("Attempting to retrieve tasks with status \"{}\"", statusName);
 		if (!statusService.isStatusValid(statusName.toUpperCase())) {
 			logger.error("Status \"{}\" is not valid",statusName);
-			throw new IllegalArgumentException(
-					statusName + " is not a valid status");
+			throw new IllegalArgumentException ("Status \"" + statusName + "\" is not valid");
+			
 		}
 
 		Status status = statusService.findStatusByName(statusName);

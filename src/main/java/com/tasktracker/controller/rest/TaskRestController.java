@@ -51,10 +51,13 @@ public class TaskRestController {
 
 			try {
 				tasks = tService.getByStatusName(status);
+
 			} catch (IllegalArgumentException e) {
+
 				return new ResponseEntity<>(e.getMessage(),
 						HttpStatus.BAD_REQUEST);
 			}
+
 		} else {
 			tasks = tService.getTasks();
 		}
