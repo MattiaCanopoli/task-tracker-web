@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tasktracker.dto.DTOTask;
 import com.tasktracker.model.Task;
+
 import com.tasktracker.service.TaskService;
 
 //@CrossOrigin
@@ -91,7 +92,7 @@ public class TaskRestController {
 	@GetMapping("tasks/{id}")
 	public ResponseEntity<?> detail(@PathVariable("id") Long id) {
 
-		logger.info("Attempting to retrieve task with id {}", id);
+		logger.info("Attempting to retrieve task with ID {}...", id);
 
 		Task t = new Task();
 
@@ -127,16 +128,16 @@ public class TaskRestController {
 	public ResponseEntity<?> create(@RequestBody DTOTask dtoTask) {
 		logger.info("Attempting to create a new task...");
 		Task task = new Task();
-		
+
 		try {
-			task=tService.createFromDTO(dtoTask);
+			task = tService.createFromDTO(dtoTask);
 		} catch (IllegalArgumentException e) {
 			logger.error(e.getMessage());
-			return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
-			
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+
 		}
 		logger.info("Task successfully created with ID: {}", task.getId());
-		return new ResponseEntity<>(task,HttpStatus.CREATED);
+		return new ResponseEntity<>(task, HttpStatus.CREATED);
 	}
 	// UPDATE
 
@@ -152,20 +153,45 @@ public class TaskRestController {
 	 */
 	@PatchMapping("tasks/{id}")
 	public ResponseEntity<?> update(@PathVariable("id") long id,
-			@RequestBody DTOTask dtoTask) {
-		Task task = tService.getByID(id);
+			@RequestBody DTOTask dto) {
 
-		if (task == null) {
-			return new ResponseEntity<>(
-					"Task with ID " + dtoTask.getId() + " not found",
-					HttpStatus.NOT_FOUND);
-		} else {
+		logger.info("Attempting to retrieve task with ID {}...", id);
+		Task task = new Task();
 
-			tService.update(task, dtoTask);
-			return new ResponseEntity<Task>(task, HttpStatus.OK);
+		try {
+			task = tService.getByID(id);
+			logger.info("Successfully retrieved task: {}", task.toString());
+		} catch (NoSuchElementException e) {
+			logger.error(e.getMessage());
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		}
+
+		if (dto.getStatus_id() > 0) {
+			try {
+				tService.updateStatus(task, dto);
+			} catch (IllegalArgumentException e) {
+				logger.error(e.getMessage());
+				return new ResponseEntity<>(e.getMessage(),
+						HttpStatus.BAD_REQUEST);
+			}
 
 		}
+
+		if (dto.getDescription() != null && !dto.getDescription().isEmpty()) {
+			try {
+				tService.updateDescription(task, dto);
+			} catch (IllegalArgumentException e) {
+				logger.error(e.getMessage());
+				return new ResponseEntity<>(e.getMessage(),
+						HttpStatus.BAD_REQUEST);
+			}
+		}
+
+		logger.info("Successfully updated task: {}", task.toString());
+		return new ResponseEntity<Task>(task, HttpStatus.OK);
+
 	}
+
 	// DELETE
 
 	/**
