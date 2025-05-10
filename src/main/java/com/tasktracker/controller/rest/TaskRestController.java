@@ -1,7 +1,10 @@
 package com.tasktracker.controller.rest;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,13 +21,14 @@ import com.tasktracker.dto.DTOTask;
 import com.tasktracker.model.Task;
 import com.tasktracker.service.TaskService;
 
-import ch.qos.logback.classic.Logger;
+
 
 //@CrossOrigin
 @RestController
 @RequestMapping("/rest")
 public class TaskRestController {
 
+	private static final Logger logger = LoggerFactory.getLogger(TaskRestController.class); 
 	private final TaskService tService;
 
 	public TaskRestController(TaskService tService) {
@@ -53,6 +57,7 @@ public class TaskRestController {
 				tasks = tService.getByStatusName(status);
 
 			} catch (IllegalArgumentException e) {
+				logger.error(e.getMessage());
 
 				return new ResponseEntity<>(e.getMessage(),
 						HttpStatus.BAD_REQUEST);
@@ -83,7 +88,14 @@ public class TaskRestController {
 	@GetMapping("tasks/{id}")
 	public ResponseEntity<?> detail(@PathVariable("id") Long id) {
 
-		Task t = tService.getByID(id);
+		Task t = new Task();
+		
+		try {
+			t= tService.getByID(id);
+		} catch (NoSuchElementException e) {
+			logger.error(e.getMessage());
+			return new ResponseEntity<>(e.getMessage(),HttpStatus.NOT_FOUND);
+		}
 
 		if (t != null) {
 			return new ResponseEntity<>(t, HttpStatus.OK);
