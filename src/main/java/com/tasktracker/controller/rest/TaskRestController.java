@@ -21,14 +21,13 @@ import com.tasktracker.dto.DTOTask;
 import com.tasktracker.model.Task;
 import com.tasktracker.service.TaskService;
 
-
-
 //@CrossOrigin
 @RestController
 @RequestMapping("/rest")
 public class TaskRestController {
 
-	private static final Logger logger = LoggerFactory.getLogger(TaskRestController.class); 
+	private static final Logger logger = LoggerFactory
+			.getLogger(TaskRestController.class);
 	private final TaskService tService;
 
 	public TaskRestController(TaskService tService) {
@@ -52,7 +51,8 @@ public class TaskRestController {
 		List<Task> tasks;
 
 		if (status != null && !status.isEmpty()) {
-
+			logger.info("Attempting to retrieve tasks with \"" + status + "\" status");
+	
 			try {
 				tasks = tService.getByStatusName(status);
 
@@ -65,12 +65,14 @@ public class TaskRestController {
 
 		} else {
 			tasks = tService.getTasks();
+			logger.info("Attempting to retrieve all tasks");
 		}
 
 		if (tasks.size() == 0) {
+			logger.warn("No tasks found");
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		}
-
+		logger.info("Found " + tasks.size() + " tasks");
 		return new ResponseEntity<>(tasks, HttpStatus.OK);
 
 	}
@@ -89,12 +91,12 @@ public class TaskRestController {
 	public ResponseEntity<?> detail(@PathVariable("id") Long id) {
 
 		Task t = new Task();
-		
+
 		try {
-			t= tService.getByID(id);
+			t = tService.getByID(id);
 		} catch (NoSuchElementException e) {
 			logger.error(e.getMessage());
-			return new ResponseEntity<>(e.getMessage(),HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 
 		if (t != null) {

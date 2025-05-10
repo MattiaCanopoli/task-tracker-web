@@ -35,7 +35,6 @@ public class TaskService {
 	 * @return a List of every task or an empty List if there are no tasks
 	 */
 	public List<Task> getTasks() {
-		logger.info("Attempting to retrieve all tasks");
 		return taskRepo.findAll();
 	}
 
@@ -51,8 +50,7 @@ public class TaskService {
 	 */
 	public List<Task> getByStatusName(String statusName)
 			throws IllegalArgumentException {
-		logger.info("Attempting to retrieve tasks with status \"{}\"",
-				statusName);
+
 		if (!statusService.isStatusValid(statusName.toUpperCase())) {
 
 			throw new IllegalArgumentException(
@@ -66,8 +64,7 @@ public class TaskService {
 		if (status != null) {
 			tasks = taskRepo.findByStatusId(status.getId());
 		}
-		logger.info("Retrieved {} tasks with status \"{}\"", tasks.size(),
-				statusName);
+
 		return tasks;
 
 	}
