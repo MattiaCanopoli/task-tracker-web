@@ -51,8 +51,9 @@ public class TaskRestController {
 		List<Task> tasks;
 
 		if (status != null && !status.isEmpty()) {
-			logger.info("Attempting to retrieve tasks with \"" + status + "\" status");
-	
+			logger.info("Attempting to retrieve tasks with \"{}\" status",
+					status);
+
 			try {
 				tasks = tService.getByStatusName(status);
 
@@ -90,6 +91,8 @@ public class TaskRestController {
 	@GetMapping("tasks/{id}")
 	public ResponseEntity<?> detail(@PathVariable("id") Long id) {
 
+		logger.info("Attempting to retrieve task with id {}", id);
+
 		Task t = new Task();
 
 		try {
@@ -99,12 +102,9 @@ public class TaskRestController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 
-		if (t != null) {
-			return new ResponseEntity<>(t, HttpStatus.OK);
-		}
-
-		return new ResponseEntity<>("task with ID " + id + " not found",
-				HttpStatus.NOT_FOUND);
+		logger.info("Task with id {} found. Task description: {}", id,
+				t.getDescription());
+		return new ResponseEntity<>(t, HttpStatus.OK);
 
 	}
 
