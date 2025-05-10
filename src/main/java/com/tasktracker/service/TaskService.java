@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.tasktracker.dto.DTOTask;
@@ -19,8 +17,6 @@ import com.tasktracker.repository.TaskRepo;
 @Service
 public class TaskService {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(TaskService.class);
 	private final TaskRepo taskRepo;
 	private final StatusService statusService;
 
@@ -35,7 +31,7 @@ public class TaskService {
 	 * @return a List of every task or an empty List if there are no tasks
 	 */
 	public List<Task> getTasks() {
-		return taskRepo.findAll();
+		return taskRepo.findByisDeletedFalse();
 	}
 
 	/**
@@ -118,18 +114,20 @@ public class TaskService {
 	 */
 	public Task createFromDTO(DTOTask dto) {
 
-		if (dto.getDescription() == null
-				|| dto.getDescription().isEmpty()) {
-			throw new IllegalArgumentException("Description cannot be null. Creation request failed.");
+		if (dto.getDescription() == null || dto.getDescription().isEmpty()) {
+			throw new IllegalArgumentException(
+					"Description cannot be null. Creation request failed.");
 		}
 
 		if (dto.getUser() == null || dto.getUser().isEmpty()) {
-			throw new IllegalArgumentException("User cannot be null. Creation request failed.");
+			throw new IllegalArgumentException(
+					"User cannot be null. Creation request failed.");
 		}
 
 		if (statusService.findStatusById(dto.getStatus_id()) == null) {
 			throw new IllegalArgumentException(
-					"Status with ID " + dto.getStatus_id() +" does not exists. Creation request failed.");
+					"Status with ID " + dto.getStatus_id()
+							+ " does not exists. Creation request failed.");
 		}
 
 		Task task = new Task();
@@ -154,31 +152,34 @@ public class TaskService {
 	 *            Stores the values to be passed to the Task object.
 	 * @return updated task or same task if there are no updates.
 	 */
-	public Task updateStatus(Task task, DTOTask dto) throws IllegalArgumentException {
+	public Task updateStatus(Task task, DTOTask dto)
+			throws IllegalArgumentException {
 
 		Status status = statusService.findStatusById(dto.getStatus_id());
-		
+
 		if (status == null) {
-			throw new IllegalArgumentException(
-					"Status with ID " + dto.getStatus_id() +" does not exists. Status update request failed.");
+			throw new IllegalArgumentException("Status with ID "
+					+ dto.getStatus_id()
+					+ " does not exists. Status update request failed.");
 		}
-		
+
 		task.setStatus(status);
 		taskRepo.save(task);
-		
+
 		return task;
 
 	}
-	
+
 	public Task updateDescription(Task task, DTOTask dto) {
-		
-		if (dto.getDescription() ==null || dto.getDescription().isEmpty()) {
-			throw new IllegalArgumentException("Desciption is empty. Description update request failed");
+
+		if (dto.getDescription() == null || dto.getDescription().isEmpty()) {
+			throw new IllegalArgumentException(
+					"Desciption is empty. Description update request failed");
 		}
-		
+
 		task.setDescription(dto.getDescription());
 		taskRepo.save(task);
-		
+
 		return task;
 	}
 
@@ -193,6 +194,7 @@ public class TaskService {
 	public void markAsDeleted(Task task) {
 		task.setStatus(statusService.findStatusById(4));
 		task.setDeletedAt(Timestamp.valueOf(LocalDateTime.now()));
+		task.setDeleted(true);
 		taskRepo.save(task);
 	}
 
