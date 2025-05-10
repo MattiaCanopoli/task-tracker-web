@@ -1,6 +1,7 @@
 package com.tasktracker.model;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -15,6 +16,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotEmpty;
 
 @Entity
@@ -43,6 +45,9 @@ public class Task {
 	@Nullable
 	@Column(nullable=true)
 	private Timestamp deletedAt;
+	
+	@Transient
+	private SimpleDateFormat format = new SimpleDateFormat("dd MMM yyyy hh:mm:ss");
 
 	@NotEmpty
 	@Column(nullable = false)
@@ -53,9 +58,9 @@ public class Task {
 	@JoinColumn(name = "status_id")
 	private Status status;
 
-	public Task() {
-
-	}
+//	public Task() {
+//
+//	}
 
 	public long getId() {
 		return id;
@@ -119,6 +124,20 @@ public class Task {
 
 	public void setStatus(Status status) {
 		this.status = status;
+	}
+	
+	private String getCreatedAtF() {
+		return format.format(this.createdAt);
+	}
+	
+	private String getUpdatedAtF() {
+		return format.format(this.updatedAt);
+	}
+
+	@Override
+	public String toString() {
+		return "id=" + id + ", user=" + user +", description=" + description + ", status: " + this.getStatus().getStatusName()
+				+ ", createdAt=" + this.getCreatedAtF() + ", last update: " + this.getUpdatedAtF();
 	}
 	
 
