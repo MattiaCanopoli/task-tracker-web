@@ -26,7 +26,8 @@ public class TaskService {
 	}
 
 	/**
-	 * Retrieves all tasks from the task table in task_tracker_web DB
+	 * Retrieves all tasks that are not marked as deleted from the task table in
+	 * task_tracker_web DB
 	 * 
 	 * @return a List of every task or an empty List if there are no tasks
 	 */
@@ -35,14 +36,17 @@ public class TaskService {
 	}
 
 	/**
-	 * statusName argument is used to retrieve the corresponding Status object
-	 * and then the corresponding id. A new ArrayList of Task is created and
-	 * filled with tasks having the corresponding statusId. If there are no task
-	 * with such statusId the list remains empty. Returns the list
-	 * 
-	 * @param statusName
-	 *            a String corresponding to the status to filter
-	 * @return a list of tasks. an empty list can be returned.
+	 * Retrieves all tasks matching the specified status name.
+	 * <p>
+	 * The provided status name is validated. If it does not correspond to an existing
+	 * status, an {@link IllegalArgumentException} is thrown.
+	 * The matching {@link Status} is then retrieved from the database, and all tasks
+	 * with that status are returned.
+	 * </p>
+	 *
+	 * @param statusName the name of the status used to filter tasks
+	 * @return a list of tasks matching the status; the list may be empty if no tasks match
+	 * @throws IllegalArgumentException if the status name is not valid
 	 */
 	public List<Task> getByStatusName(String statusName)
 			throws IllegalArgumentException {
@@ -56,10 +60,7 @@ public class TaskService {
 
 		Status status = statusService.findStatusByName(statusName);
 
-		List<Task> tasks = new ArrayList<>();
-		if (status != null) {
-			tasks = taskRepo.findByStatusId(status.getId());
-		}
+		List<Task> tasks = taskRepo.findByStatusId(status.getId());
 
 		return tasks;
 
@@ -164,11 +165,11 @@ public class TaskService {
 		}
 
 		task.setStatus(status);
-		
-		if (task.getStatus().getId()==3) {
+
+		if (task.getStatus().getId() == 3) {
 			task.setCompletedAt(Timestamp.valueOf(LocalDateTime.now()));
 		}
-		
+
 		taskRepo.save(task);
 
 		return task;
