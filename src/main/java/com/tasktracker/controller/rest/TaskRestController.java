@@ -166,8 +166,19 @@ public class TaskRestController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 
+		if (task.isDeleted()) {
+			return new ResponseEntity<>(
+					"Task has already been marked as deleted and cannot be updated.",
+					HttpStatus.BAD_REQUEST);
+		}
+
 		if (dto.getStatus_id() > 0) {
 			try {
+				if (dto.getStatus_id() == 4) {
+					return new ResponseEntity<>(
+							"Cannot update task status to 'deleted' via PATCH. Use DELETE instead.",
+							HttpStatus.BAD_REQUEST);
+				}
 				tService.updateStatus(task, dto);
 			} catch (IllegalArgumentException e) {
 				logger.error(e.getMessage());
@@ -207,18 +218,20 @@ public class TaskRestController {
 
 		logger.info("Attempting to delete task with ID: {}", id);
 		Task task = new Task();
-		
+
 		try {
 			task = tService.getByID(id);
-			logger.info("Found task: {}",task);
+			logger.info("Found task: {}", task);
 		} catch (NoSuchElementException e) {
 			logger.error(e.getMessage());
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
-		
+
 		tService.markAsDeleted(task);
-		logger.info("Task with ID {} marked as deleted",id);
-		return new ResponseEntity<>("Task with ID " + task.getId() + " successfully deleted", HttpStatus.OK);
+		logger.info("Task with ID {} marked as deleted", id);
+		return new ResponseEntity<>(
+				"Task with ID " + task.getId() + " successfully deleted",
+				HttpStatus.OK);
 	}
 
 }
