@@ -164,6 +164,11 @@ public class TaskService {
 		}
 
 		task.setStatus(status);
+		
+		if (task.getStatus().getId()==3) {
+			task.setCompletedAt(Timestamp.valueOf(LocalDateTime.now()));
+		}
+		
 		taskRepo.save(task);
 
 		return task;
