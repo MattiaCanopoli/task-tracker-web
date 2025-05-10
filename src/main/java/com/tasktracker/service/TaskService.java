@@ -78,18 +78,15 @@ public class TaskService {
 	 * @return found task or null if nothing found
 	 */
 	public Task getByID(long id) {
-		logger.info("Attempting to retrieve task with id {}", id);
+
 		Optional<Task> t = taskRepo.findById(id);
 
 		if (!t.isPresent()) {
 
 			throw new NoSuchElementException(
 					"Task with ID \"" + id + "\" does not exists");
-
 		}
 
-		logger.info("Task with id {} found. Task description: {}", id,
-				t.get().getDescription());
 		return t.get();
 
 	}
