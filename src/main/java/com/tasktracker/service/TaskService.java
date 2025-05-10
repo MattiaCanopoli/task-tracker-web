@@ -1,5 +1,6 @@
 package com.tasktracker.service;
 
+import java.security.InvalidAlgorithmParameterException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -99,7 +100,6 @@ public class TaskService {
 	 */
 	public void save(Task task) {
 		taskRepo.save(task);
-		logger.info("Task with ID: {} has been saved", task.getId());
 	}
 
 	// TODO: implement status validation
@@ -118,24 +118,27 @@ public class TaskService {
 	 *         missing
 	 */
 	public Task createFromDTO(DTOTask dtoTask) {
-		logger.info("Creating Task from DTO: {}", dtoTask);
-		if ((dtoTask.getDescription() != null
-				&& !dtoTask.getDescription().isEmpty())
-				&& (dtoTask.getStatus_id() != 0) && (dtoTask.getUser() != null)
-				&& !dtoTask.getUser().isEmpty()) {
-			Task task = new Task();
-			task.setDescription(dtoTask.getDescription());
-			task.setStatus(
-					statusService.findStatusById(dtoTask.getStatus_id()));
-			task.setUser(dtoTask.getUser());
-			taskRepo.save(task);
-			logger.info("Task successfully created with ID: {}", task.getId());
-			return task;
+
+		if (dtoTask.getDescription() == null
+				|| dtoTask.getDescription().isEmpty()) {
+			throw new IllegalArgumentException("Description cannot be null. Creation request failed.");
 		}
-		logger.error(
-				"Failed to create Task - missing required fields in DTO: {}",
-				dtoTask);
-		return null;
+
+		if (dtoTask.getUser() == null || dtoTask.getUser().isEmpty()) {
+			throw new IllegalArgumentException("User cannot be null. Creation request failed.");
+		}
+
+		if (statusService.findStatusById(dtoTask.getStatus_id()) == null) {
+			throw new IllegalArgumentException(
+					"Status with ID " + dtoTask.getStatus_id() +" does not exists. Creation request failed.");
+		}
+
+		Task task = new Task();
+		task.setDescription(dtoTask.getDescription());
+		task.setStatus(statusService.findStatusById(dtoTask.getStatus_id()));
+		task.setUser(dtoTask.getUser());
+		taskRepo.save(task);
+		return task;
 	}
 
 	/**

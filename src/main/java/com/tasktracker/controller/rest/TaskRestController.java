@@ -125,15 +125,18 @@ public class TaskRestController {
 	 */
 	@PostMapping("/tasks")
 	public ResponseEntity<?> create(@RequestBody DTOTask dtoTask) {
-		Task task = tService.createFromDTO(dtoTask);
-
-		if (task == null) {
-			return new ResponseEntity<>(
-					"Missing fields.\nFields \"description\", \"status_id\" and \"user\" must be specified.",
-					HttpStatus.BAD_REQUEST);
+		logger.info("Attempting to create a new task...");
+		Task task = new Task();
+		
+		try {
+			task=tService.createFromDTO(dtoTask);
+		} catch (IllegalArgumentException e) {
+			logger.error(e.getMessage());
+			return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+			
 		}
-		return new ResponseEntity<Task>(task, HttpStatus.CREATED);
-
+		logger.info("Task successfully created with ID: {}", task.getId());
+		return new ResponseEntity<>(task,HttpStatus.CREATED);
 	}
 	// UPDATE
 
