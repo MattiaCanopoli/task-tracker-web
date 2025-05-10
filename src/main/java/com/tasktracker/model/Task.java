@@ -46,6 +46,8 @@ public class Task {
 	@Column(nullable=true)
 	private Timestamp deletedAt;
 	
+	private boolean isDeleted;
+	
 	@Transient
 	private SimpleDateFormat format = new SimpleDateFormat("dd MMM yyyy hh:mm:ss");
 
@@ -132,6 +134,14 @@ public class Task {
 	
 	private String getUpdatedAtF() {
 		return format.format(this.updatedAt);
+	}
+
+	public boolean isDeleted() {
+		return isDeleted;
+	}
+
+	public void setDeleted(boolean isDeleted) {
+		this.isDeleted = isDeleted;
 	}
 
 	@Override
