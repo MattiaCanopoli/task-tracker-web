@@ -205,17 +205,20 @@ public class TaskRestController {
 	@DeleteMapping("tasks/{id}")
 	public ResponseEntity<String> delete(@PathVariable("id") long id) {
 
-		String message = "Task with ID " + id + " not found";
-
-		Task task = tService.getByID(id);
-
-		if (task != null) {
-			message = tService.markAsDeleted(task);
-			return new ResponseEntity<String>(message, HttpStatus.OK);
+		logger.info("Attempting to delete task with ID: {}", id);
+		Task task = new Task();
+		
+		try {
+			task = tService.getByID(id);
+			logger.info("Found task: {}",task);
+		} catch (NoSuchElementException e) {
+			logger.error(e.getMessage());
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
-
-		return new ResponseEntity<String>(message, HttpStatus.NOT_FOUND);
-
+		
+		tService.markAsDeleted(task);
+		logger.info("Task with ID {} marked as deleted",id);
+		return new ResponseEntity<>("Task with ID " + task.getId() + " successfully deleted", HttpStatus.OK);
 	}
 
 }
