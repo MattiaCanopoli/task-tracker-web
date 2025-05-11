@@ -2,7 +2,6 @@ package com.tasktracker.service;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -26,27 +25,29 @@ public class TaskService {
 	}
 
 	/**
-	 * Retrieves all tasks that are not marked as deleted from the task table in
-	 * task_tracker_web DB
-	 * 
-	 * @return a List of every task or an empty List if there are no tasks
+	 * Retrieves all {@link Task} entities from the task_tracker_web database,
+	 * excluding those marked as deleted.
+	 *
+	 * @return a list of all active {@link Task} entities; the list may be empty
+	 *         if no tasks are found
 	 */
 	public List<Task> getTasks() {
 		return taskRepo.findByisDeletedFalse();
 	}
 
 	/**
-	 * Retrieves all tasks matching the specified status name.
+	 * Retrieves all {@link Task} entities matching the specified status name.
 	 * <p>
-	 * The provided status name is validated. If it does not correspond to an existing
-	 * status, an {@link IllegalArgumentException} is thrown.
-	 * The matching {@link Status} is then retrieved from the database, and all tasks
-	 * with that status are returned.
+	 * If the provided status name does not correspond to an existing status, an
+	 * {@link IllegalArgumentException} is thrown.
 	 * </p>
 	 *
-	 * @param statusName the name of the status used to filter tasks
-	 * @return a list of tasks matching the status; the list may be empty if no tasks match
-	 * @throws IllegalArgumentException if the status name is not valid
+	 * @param statusName
+	 *            the name of the status used to filter tasks
+	 * @return a list of {@link Task} entities with the given status; the list
+	 *         may be empty if no tasks match
+	 * @throws IllegalArgumentException
+	 *             if the provided status name is not valid
 	 */
 	public List<Task> getByStatusName(String statusName)
 			throws IllegalArgumentException {
@@ -67,21 +68,26 @@ public class TaskService {
 	}
 
 	/**
-	 * Retrieve the task with the provided ID. Returns the task if exists, else
-	 * return null
-	 * 
+	 * Retrieves the {@link Task} entity with the specified ID.
+	 * <p>
+	 * If no {@link Task} with the given ID exists, a
+	 * {@link NoSuchElementException} is thrown.
+	 * </p>
+	 *
 	 * @param id
-	 *            long of the task to find
-	 * @return found task or null if nothing found
+	 *            the ID of the {@link Task} to retrieve
+	 * @return the {@link Task} entity with the specified ID
+	 * @throws NoSuchElementException
+	 *             if no {@link Task} with the provided ID exists
 	 */
-	public Task getByID(long id) {
+	public Task getByID(long id) throws NoSuchElementException {
 
 		Optional<Task> t = taskRepo.findById(id);
 
 		if (!t.isPresent()) {
 
 			throw new NoSuchElementException(
-					"Task with ID \"" + id + "\" does not exists");
+					"Task with ID \"" + id + "\" does not exist");
 		}
 
 		return t.get();
@@ -89,31 +95,35 @@ public class TaskService {
 	}
 
 	/**
-	 * Persists the provided Task into task_tracker_web DB
-	 * 
+	 * Saves the specified {@link Task} entity to the task_tracker_web database.
+	 *
 	 * @param task
-	 *            object to persist
+	 *            the {@link Task} to be saved
 	 */
 	public void save(Task task) {
 		taskRepo.save(task);
 	}
 
-	// TODO: implement status validation
-	// TODO: implement DTO validation
 	/**
-	 * Checks if DTO fields (description, statusID, user) are present. If any of
-	 * the fields is missing, returns null. Creates a new Task. Task fields are
-	 * filled with the corresponding ones in the DTO. ID and date fields
-	 * (createdAt, updatedAt) are automatically generated. Persists newly
-	 * created Task instance to the DB
-	 * 
-	 * @param dtoTask
-	 *            an object representing a simplified version of a Task Object.
-	 *            Stores the values to be passed to the Task object.
-	 * @return newly created task or null if any required field in the DTO is
-	 *         missing
+	 * Validates the fields of the provided {@link DTOTask} and creates a new
+	 * {@link Task} entity.
+	 * <p>
+	 * If any required field is null, empty, or invalid (e.g., invalid status
+	 * ID), an {@link IllegalArgumentException} is thrown.
+	 * </p>
+	 * <p>
+	 * Upon successful validation, a new {@link Task} is instantiated using the
+	 * DTO's values and persisted to the task_tracker_web database.
+	 * </p>
+	 *
+	 * @param dto
+	 *            the {@link DTOTask} containing task data to be validated and
+	 *            persisted
+	 * @return the newly created {@link Task} entity
+	 * @throws IllegalArgumentException
+	 *             if the description, user, or status ID is invalid
 	 */
-	public Task createFromDTO(DTOTask dto) {
+	public Task createFromDTO(DTOTask dto) throws IllegalArgumentException {
 
 		if (dto.getDescription() == null || dto.getDescription().isEmpty()) {
 			throw new IllegalArgumentException(
@@ -140,18 +150,23 @@ public class TaskService {
 	}
 
 	/**
-	 * Gets description and Status from the DTO. If any of the field is present,
-	 * updates the provided task with the new values. If DTO's statusID is 3
-	 * ("done"), completedAt value is updated to the current timestamp.
-	 * UpdatedAt value if automatically updated to the current timestamp.
-	 * Persists the new values in the DB.
-	 * 
-	 * @param task
-	 *            the task object to be updated
-	 * @param dto
-	 *            an object representing a simplified version of a Task Object.
-	 *            Stores the values to be passed to the Task object.
-	 * @return updated task or same task if there are no updates.
+	 * Updates the status of the provided {@link Task} based on the data from the given {@link DTOTask}.
+	 * <p>
+	 * If the provided status ID does not correspond to an existing {@link Status},
+	 * an {@link IllegalArgumentException} is thrown.
+	 * </p>
+	 * <p>
+	 * If the new status ID is {@code 3} (representing "DONE"), the {@code completedAt}
+	 * field is also set to the current {@link Timestamp}.
+	 * </p>
+	 * <p>
+	 * The updated {@link Task} is then persisted to the task_tracker_web database.
+	 * </p>
+	 *
+	 * @param task the {@link Task} entity to be updated
+	 * @param dto  the {@link DTOTask} containing the new status ID
+	 * @return the updated {@link Task} entity
+	 * @throws IllegalArgumentException if the provided status ID is invalid
 	 */
 	public Task updateStatus(Task task, DTOTask dto)
 			throws IllegalArgumentException {
@@ -176,7 +191,22 @@ public class TaskService {
 
 	}
 
-	public Task updateDescription(Task task, DTOTask dto) {
+	/**
+	 * Updates the description of the provided {@link Task} based on the data from the given {@link DTOTask}.
+	 * <p>
+	 * If the provided {@code description} is null or empty, an {@link IllegalArgumentException} is thrown.
+	 * </p>
+	 * <p>
+	 * After validation, the description of the provided {@link Task} is updated, and the task is then persisted
+	 * to the task_tracker_web database.
+	 * </p>
+	 *
+	 * @param task the {@link Task} entity to be updated
+	 * @param dto  the {@link DTOTask} containing the new {@code description}
+	 * @return the updated {@link Task} entity
+	 * @throws IllegalArgumentException if the provided {@code description} is null or empty
+	 */
+	public Task updateDescription(Task task, DTOTask dto) throws IllegalArgumentException {
 
 		if (dto.getDescription() == null || dto.getDescription().isEmpty()) {
 			throw new IllegalArgumentException(
@@ -190,12 +220,13 @@ public class TaskService {
 	}
 
 	/**
-	 * Sets Status of the provided task to DELETED (id: 4) and deletedAt value
-	 * is updated to current timestamp. New values are persisted to DB.
+	 * Marks the given {@link Task} as {@code DELETED} by updating its {@link Status} to {@code 4} ("DELETED"),
+	 * setting the {@code deletedAt} field to the current {@link Timestamp}, and the {@code isDeleted} field to {@code true}.
+	 * <p>
+	 * After performing these updates, the {@link Task} is persisted to the task_tracker_web database.
+	 * </p>
 	 * 
-	 * @param task
-	 *            task instance to be deleted
-	 * @return a confirmation message
+	 * @param task the {@link Task} to be marked as {@code DELETED}
 	 */
 	public void markAsDeleted(Task task) {
 		task.setStatus(statusService.findStatusById(4));
