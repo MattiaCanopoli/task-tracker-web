@@ -250,11 +250,11 @@ public class TaskRestController {
 					HttpStatus.BAD_REQUEST);
 		}
 		//if provided, DTO's status_id is validated. if it is not valid, exception is caught and a ResponseEntity with HttpStatus 400 (BAD_REQUEST) and an error message is returned
-		if (dto.getStatus_id() > 0) {
+		if (dto.getStatusID() > 0) {
 			try {
 				//it's not possible to mark a task as deleted using this method
 				//if status is valid, but is DELETED, a ResponseEntity with HttpStatus 400 (BAD_REQUEST) and an error message is returned
-				if (dto.getStatus_id() == 4) {
+				if (dto.getStatusID() == 4) {
 					return new ResponseEntity<>(
 							"Cannot update task status to 'deleted' via PATCH. Use DELETE instead.",
 							HttpStatus.BAD_REQUEST);

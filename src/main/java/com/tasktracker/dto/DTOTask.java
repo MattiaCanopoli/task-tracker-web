@@ -6,8 +6,8 @@ public class DTOTask {
 
 	private long id;
 	private String description;
-	private int status_id;
-	private String user;
+	private int statusID;
+	private long userID;
 	private Timestamp completedAt;
 
 	public String getDescription() {
@@ -18,20 +18,20 @@ public class DTOTask {
 		this.description = description;
 	}
 
-	public int getStatus_id() {
-		return status_id;
+	public int getStatusID() {
+		return statusID;
 	}
 
 	public void setStatus_id(int status_id) {
-		this.status_id = status_id;
+		this.statusID = status_id;
 	}
 
-	public String getUser() {
-		return user;
+	public long getUserID() {
+		return userID;
 	}
 
-	public void setUser(String user) {
-		this.user = user;
+	public void setUserID(long userID) {
+		this.userID = userID;
 	}
 
 	public long getId() {
@@ -52,8 +52,8 @@ public class DTOTask {
 
 	@Override
 	public String toString() {
-		return "DTOTask [id=" + id + ", description=" + description + ", user="
-				+ user + ", status_id=" + status_id + "]";
+		return "DTOTask [id=" + id + ", description=" + description + ", userID="
+				+ userID + ", status_id=" + statusID + "]";
 	}
 
 }

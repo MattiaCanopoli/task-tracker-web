@@ -130,22 +130,22 @@ public class TaskService {
 			throw new IllegalArgumentException(
 					"Description cannot be null. Creation request failed.");
 		}
-		//validate DTO's user field. if it's not valid, exception is thrown
-		if (dto.getUser() == null || dto.getUser().isEmpty()) {
-			throw new IllegalArgumentException(
-					"User cannot be null. Creation request failed.");
-		}
+//		//validate DTO's user field. if it's not valid, exception is thrown
+//		if (dto.getUser() == null || dto.getUser().isEmpty()) {
+//			throw new IllegalArgumentException(
+//					"User cannot be null. Creation request failed.");
+//		}
 		//validate DTO's status_id field. if it's not valid, exception is thrown
-		if (statusService.findStatusById(dto.getStatus_id()) == null) {
+		if (statusService.findStatusById(dto.getStatusID()) == null) {
 			throw new IllegalArgumentException(
-					"Status with ID " + dto.getStatus_id()
+					"Status with ID " + dto.getStatusID()
 							+ " does not exists. Creation request failed.");
 		}
 		//instantiate a new task using DTO's values
 		Task task = new Task();
 		task.setDescription(dto.getDescription());
-		task.setStatus(statusService.findStatusById(dto.getStatus_id()));
-		task.setUser(dto.getUser());
+		task.setStatus(statusService.findStatusById(dto.getStatusID()));
+//		task.setUser(dto.getUser());
 		//saves the task in the DB and return it
 		taskRepo.save(task);
 		return task;
@@ -173,11 +173,11 @@ public class TaskService {
 	public Task updateStatus(Task task, DTOTask dto)
 			throws IllegalArgumentException {
 		//validate DTO's status_id field. if it's not valid, exception is thrown
-		Status status = statusService.findStatusById(dto.getStatus_id());
+		Status status = statusService.findStatusById(dto.getStatusID());
 
 		if (status == null) {
 			throw new IllegalArgumentException("Status with ID "
-					+ dto.getStatus_id()
+					+ dto.getStatusID()
 					+ " does not exists. Status update request failed.");
 		}
 		//status field of the provided task is updated with the DTO's value 
