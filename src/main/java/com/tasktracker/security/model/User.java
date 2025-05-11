@@ -1,12 +1,24 @@
-package com.tasktracker.model;
+package com.tasktracker.security.model;
+
+import java.util.List;
+import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tasktracker.model.Task;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Entity
 public class User {
@@ -20,16 +32,26 @@ public class User {
 	private String username;
 	
 	@NotEmpty
-	@Column(nullable=false)
+	@Column(nullable=false, unique=true)
 	private String email;
 
-	@NotNull
-	@Column(name = "is_active", columnDefinition = "BOOLEAN")
-	private boolean active;
+	@NotEmpty
+	@JsonIgnore
+	@Size(min=8, max=24)
+	@Column(nullable=false)
+	private String password;
 	
-	public User() {
-		
-	}
+	@ManyToMany(fetch = FetchType.EAGER)
+	private Set<Role> roles;
+	
+	@JsonBackReference
+	@OneToMany(mappedBy = "user")
+	private List<Task> tasks;
+
+	
+//	public User() {
+//		
+//	}
 
 	public long getId() {
 		return id;
@@ -55,13 +77,15 @@ public class User {
 		this.email = email;
 	}
 
-	public boolean isActive() {
-		return active;
+	private String getPassword() {
+		return password;
 	}
 
-	public void setActive(boolean active) {
-		this.active = active;
+	private void setPassword(String password) {
+		this.password = password;
 	}
 	
+	
+
 	
 }
