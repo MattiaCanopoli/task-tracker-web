@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.tasktracker.security.model.User;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
@@ -18,6 +19,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 public class Task {
@@ -51,9 +53,11 @@ public class Task {
 	@Transient
 	private SimpleDateFormat format = new SimpleDateFormat("dd MMM yyyy hh:mm:ss");
 
-	@NotEmpty
-	@Column(nullable = false)
-	private String user;
+	@NotNull
+	@ManyToOne
+	@JoinColumn(nullable = false)
+	@JsonManagedReference
+	private User user;
 
 	@ManyToOne
 	@JsonManagedReference
@@ -112,11 +116,12 @@ public class Task {
 		this.deletedAt = deletedAt;
 	}
 
-	public String getUser() {
+
+	public User getUser() {
 		return user;
 	}
 
-	public void setUser(String user) {
+	public void setUser(User user) {
 		this.user = user;
 	}
 
