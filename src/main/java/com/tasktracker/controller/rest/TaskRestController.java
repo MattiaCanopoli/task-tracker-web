@@ -68,6 +68,9 @@ public class TaskRestController {
 			logger.info("Attempting to retrieve tasks with \"{}\" status",
 					status);
 
+			// status is validated. if it is not valid, the exception is caught
+			// and a ResponseEntity with HttpStatus 400 (BAD_REQUEST) and an
+			// error message is returned
 			try {
 				tasks = tService.getByStatusName(status);
 
@@ -77,16 +80,20 @@ public class TaskRestController {
 				return new ResponseEntity<>(e.getMessage(),
 						HttpStatus.BAD_REQUEST);
 			}
-
+			// if status is not specified, all tasks are retrieved
 		} else {
 			tasks = tService.getTasks();
 			logger.info("Attempting to retrieve all tasks");
 		}
 
+		// if there are no tasks with the specified status (or no tasks at all),
+		// a ResponseEntity with HttpStatus 204 (NO_CONTENT) is returned
 		if (tasks.size() == 0) {
 			logger.warn("No tasks found");
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		}
+		// A ResponseEntity with HttpStatus 200 (OK) and a list of all retrieved
+		// tasks is returned
 		logger.info("Found " + tasks.size() + " tasks");
 		return new ResponseEntity<>(tasks, HttpStatus.OK);
 
@@ -121,13 +128,17 @@ public class TaskRestController {
 
 		Task t = new Task();
 
+		// the provided ID is validated. if is not valid, the exception is
+		// caught and a ResponseEntity with HttpStatus 404 (NOT_FOUND) and an
+		// error message is returned
 		try {
 			t = tService.getByID(id);
 		} catch (NoSuchElementException e) {
 			logger.error(e.getMessage());
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
-
+		// a ResponseEntity with HttpStatus 200 (OK) and the task with the
+		// specified ID is returned
 		logger.info("Task with id {} found. Task description: {}", id,
 				t.getDescription());
 		return new ResponseEntity<>(t, HttpStatus.OK);
@@ -162,7 +173,9 @@ public class TaskRestController {
 	public ResponseEntity<?> create(@RequestBody DTOTask dtoTask) {
 		logger.info("Attempting to create a new task...");
 		Task task = new Task();
-
+		// DTO's fields (description, user, status_id) are validated. if any of
+		// the field is not valid, the exception is caught and a ResponseEntity with HttpStatus 400
+		// (BAD_REQUEST) and an error message is returned
 		try {
 			task = tService.createFromDTO(dtoTask);
 		} catch (IllegalArgumentException e) {
@@ -170,6 +183,7 @@ public class TaskRestController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 
 		}
+		//a ResponseEntity with HttpStatus 201 (CREATED) and the new task is returned
 		logger.info("Task successfully created with ID: {}", task.getId());
 		return new ResponseEntity<>(task, HttpStatus.CREATED);
 	}
@@ -218,7 +232,9 @@ public class TaskRestController {
 
 		logger.info("Attempting to retrieve task with ID {}...", id);
 		Task task = new Task();
-
+		// the provided ID is validated. if is not valid, the exception is
+		// caught and a ResponseEntity with HttpStatus 404 (NOT_FOUND) and an
+		// error message is returned
 		try {
 			task = tService.getByID(id);
 			logger.info("Successfully retrieved task: {}", task.toString());
@@ -227,19 +243,23 @@ public class TaskRestController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 
+		//task status is checked. if is DELETED, a a ResponseEntity with HttpStatus 400 (BAD_REQUEST) and an error message is returned
 		if (task.isDeleted()) {
 			return new ResponseEntity<>(
 					"Task has already been marked as deleted and cannot be updated.",
 					HttpStatus.BAD_REQUEST);
 		}
-
+		//if provided, DTO's status_id is validated. if it is not valid, exception is caught and a ResponseEntity with HttpStatus 400 (BAD_REQUEST) and an error message is returned
 		if (dto.getStatus_id() > 0) {
 			try {
+				//it's not possible to mark a task as deleted using this method
+				//if status is valid, but is DELETED, a ResponseEntity with HttpStatus 400 (BAD_REQUEST) and an error message is returned
 				if (dto.getStatus_id() == 4) {
 					return new ResponseEntity<>(
 							"Cannot update task status to 'deleted' via PATCH. Use DELETE instead.",
 							HttpStatus.BAD_REQUEST);
 				}
+				//upon validation, status is updated
 				tService.updateStatus(task, dto);
 			} catch (IllegalArgumentException e) {
 				logger.error(e.getMessage());
@@ -249,8 +269,10 @@ public class TaskRestController {
 
 		}
 
+		//if provided, DTO's description is validated. if is not valid, exception is caught and a ResponseEntity with HttpStatus 400 (BAD_REQUEST) and an error message is returned
 		if (dto.getDescription() != null && !dto.getDescription().isEmpty()) {
 			try {
+				//upon validation, description is updated
 				tService.updateDescription(task, dto);
 			} catch (IllegalArgumentException e) {
 				logger.error(e.getMessage());
@@ -259,6 +281,7 @@ public class TaskRestController {
 			}
 		}
 
+		//a ResponseEntity with HttpStatus 200 (OK) and the updated task is returned
 		logger.info("Successfully updated task: {}", task.toString());
 		return new ResponseEntity<Task>(task, HttpStatus.OK);
 
@@ -291,7 +314,9 @@ public class TaskRestController {
 
 		logger.info("Attempting to delete task with ID: {}", id);
 		Task task = new Task();
-
+		// the provided ID is validated. if is not valid, the exception is
+		// caught and a ResponseEntity with HttpStatus 404 (NOT_FOUND) and an
+		// error message is returned
 		try {
 			task = tService.getByID(id);
 			logger.info("Found task: {}", task);
@@ -300,8 +325,10 @@ public class TaskRestController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 
+		//upon validation, the task with the specified ID is marked ad deleted
 		tService.markAsDeleted(task);
 		logger.info("Task with ID {} marked as deleted", id);
+		//a ResponseEntity with HttpStatus 200 and a confirmation message is returned
 		return new ResponseEntity<>(
 				"Task with ID " + task.getId() + " successfully deleted",
 				HttpStatus.OK);

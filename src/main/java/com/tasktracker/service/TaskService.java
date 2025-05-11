@@ -51,18 +51,18 @@ public class TaskService {
 	 */
 	public List<Task> getByStatusName(String statusName)
 			throws IllegalArgumentException {
-
+		//specified statusName is validated. if it's not valid, exception is thrown
 		if (!statusService.isStatusValid(statusName.toUpperCase())) {
 
 			throw new IllegalArgumentException(
 					"Status \"" + statusName + "\" is not valid");
 
 		}
-
+		//a new Status is instantiated by retrieving it from DB
 		Status status = statusService.findStatusByName(statusName);
-
+		//a new list of task with the specified status in instantiated
 		List<Task> tasks = taskRepo.findByStatusId(status.getId());
-
+		//return the list
 		return tasks;
 
 	}
@@ -81,15 +81,15 @@ public class TaskService {
 	 *             if no {@link Task} with the provided ID exists
 	 */
 	public Task getByID(long id) throws NoSuchElementException {
-
+		//instantiate a new Optional<Task> by retrieving the task with the specified ID from DB
 		Optional<Task> t = taskRepo.findById(id);
-
+		//if there is no task with the specified ID an exception is thrown
 		if (!t.isPresent()) {
 
 			throw new NoSuchElementException(
 					"Task with ID \"" + id + "\" does not exist");
 		}
-
+		//return the task with the specified ID
 		return t.get();
 
 	}
@@ -125,26 +125,28 @@ public class TaskService {
 	 */
 	public Task createFromDTO(DTOTask dto) throws IllegalArgumentException {
 
+		//validate DTO's description field. if it's not valid, exception is thrown
 		if (dto.getDescription() == null || dto.getDescription().isEmpty()) {
 			throw new IllegalArgumentException(
 					"Description cannot be null. Creation request failed.");
 		}
-
+		//validate DTO's user field. if it's not valid, exception is thrown
 		if (dto.getUser() == null || dto.getUser().isEmpty()) {
 			throw new IllegalArgumentException(
 					"User cannot be null. Creation request failed.");
 		}
-
+		//validate DTO's status_id field. if it's not valid, exception is thrown
 		if (statusService.findStatusById(dto.getStatus_id()) == null) {
 			throw new IllegalArgumentException(
 					"Status with ID " + dto.getStatus_id()
 							+ " does not exists. Creation request failed.");
 		}
-
+		//instantiate a new task using DTO's values
 		Task task = new Task();
 		task.setDescription(dto.getDescription());
 		task.setStatus(statusService.findStatusById(dto.getStatus_id()));
 		task.setUser(dto.getUser());
+		//saves the task in the DB and return it
 		taskRepo.save(task);
 		return task;
 	}
@@ -170,7 +172,7 @@ public class TaskService {
 	 */
 	public Task updateStatus(Task task, DTOTask dto)
 			throws IllegalArgumentException {
-
+		//validate DTO's status_id field. if it's not valid, exception is thrown
 		Status status = statusService.findStatusById(dto.getStatus_id());
 
 		if (status == null) {
@@ -178,13 +180,13 @@ public class TaskService {
 					+ dto.getStatus_id()
 					+ " does not exists. Status update request failed.");
 		}
-
+		//status field of the provided task is updated with the DTO's value 
 		task.setStatus(status);
-
+		//if the new status is "COMPLETED", completedAt field is set to current timestamp
 		if (task.getStatus().getId() == 3) {
 			task.setCompletedAt(Timestamp.valueOf(LocalDateTime.now()));
 		}
-
+		//saves the task in the DB and return it
 		taskRepo.save(task);
 
 		return task;
@@ -207,15 +209,15 @@ public class TaskService {
 	 * @throws IllegalArgumentException if the provided {@code description} is null or empty
 	 */
 	public Task updateDescription(Task task, DTOTask dto) throws IllegalArgumentException {
-
+		//validate DTO's description field. if it's not valid, exception is thrown
 		if (dto.getDescription() == null || dto.getDescription().isEmpty()) {
 			throw new IllegalArgumentException(
 					"Desciption is empty. Description update request failed");
 		}
-
+		//description field of the provided task is updated with the DTO's value 
 		task.setDescription(dto.getDescription());
+		//saves the task in the DB and return it
 		taskRepo.save(task);
-
 		return task;
 	}
 
@@ -229,9 +231,13 @@ public class TaskService {
 	 * @param task the {@link Task} to be marked as {@code DELETED}
 	 */
 	public void markAsDeleted(Task task) {
+		//sets status of the provided task to DELETED
 		task.setStatus(statusService.findStatusById(4));
+		//sets deletedAt field to current timestamp
 		task.setDeletedAt(Timestamp.valueOf(LocalDateTime.now()));
+		//sets isDeleted field to true
 		task.setDeleted(true);
+		//saves the task in the DB
 		taskRepo.save(task);
 	}
 
