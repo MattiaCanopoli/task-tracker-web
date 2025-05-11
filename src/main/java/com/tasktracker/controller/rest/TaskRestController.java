@@ -36,15 +36,28 @@ public class TaskRestController {
 	}
 
 	// READ (multiple)
+
 	/**
-	 * Retrieves a list of tasks. This list can be filtered by status name. If
-	 * the status name is not provided, all tasks are retrieved.
-	 * 
+	 * Retrieves a list of tasks based on the provided status. If no status is
+	 * provided, all tasks are returned.
+	 * <p>
+	 * If a status is provided, it is used to filter tasks by their current
+	 * status. If the status is invalid, a {@link BadRequestException} is
+	 * returned with an appropriate error message.
+	 * </p>
+	 * <p>
+	 * If no tasks are found, a {@link HttpStatus#NO_CONTENT} response is
+	 * returned. Otherwise, the list of tasks is returned with a
+	 * {@link HttpStatus#OK} status.
+	 * </p>
+	 *
 	 * @param status
-	 *            (optional) Valid values:
-	 *            "to-do","in-progress","done","deleted"
-	 * @return a List of tasks and HttpStatus 200(OK) or HttpStatus
-	 *         204(NO_CONTENT) if no tasks are retrieved.
+	 *            the status of the tasks to retrieve (optional)
+	 * @return a {@link ResponseEntity} containing the list of tasks or an error
+	 *         message if an invalid status is provided
+	 * @throws IllegalArgumentException
+	 *             if the provided status does not correspond to an existing
+	 *             status
 	 */
 	@GetMapping("/tasks")
 	public ResponseEntity<?> list(
@@ -82,12 +95,24 @@ public class TaskRestController {
 	// SHOW
 
 	/**
-	 * Retrieves the task with the provided ID
-	 * 
+	 * Retrieves the details of a {@link Task} with the specified ID.
+	 * <p>
+	 * Attempts to retrieve the {@link Task} from the database using the
+	 * provided ID. If no task is found with the given ID, a
+	 * {@link HttpStatus#NOT_FOUND} response is returned with an appropriate
+	 * error message.
+	 * </p>
+	 * <p>
+	 * If the task is found, the task details are returned in the response with
+	 * a {@link HttpStatus#OK} status.
+	 * </p>
+	 *
 	 * @param id
-	 *            long of the task to find
-	 * @return HttpStatus 200(OK) and task having the provided id, or HttpStatus
-	 *         404(NOT_FOUND) and an error message if the task is not found.
+	 *            the ID of the {@link Task} to retrieve
+	 * @return a {@link ResponseEntity} containing the {@link Task} details if
+	 *         found, or an error message if not found
+	 * @throws NoSuchElementException
+	 *             if the task with the provided ID does not exist
 	 */
 	@GetMapping("tasks/{id}")
 	public ResponseEntity<?> detail(@PathVariable("id") Long id) {
@@ -112,17 +137,26 @@ public class TaskRestController {
 	// CREATE
 
 	/**
-	 * Creates and persists a new task. The request body must contain a DTO with
-	 * the following fields:"description", "status_id" and "user" to be passed
-	 * to the new task. If any required field is missing, returns HttpStatus 400
-	 * (BAD_REQUEST) and an error message.
-	 * 
+	 * Creates a new {@link Task} based on the provided {@link DTOTask} data.
+	 * <p>
+	 * Attempts to create a new task by mapping the fields from the provided
+	 * DTO. If the DTO contains invalid or missing fields, an
+	 * {@link HttpStatus#BAD_REQUEST} response is returned with an appropriate
+	 * error message.
+	 * </p>
+	 * <p>
+	 * If the task is created successfully, the task details are returned in the
+	 * response with a {@link HttpStatus#CREATED} status.
+	 * </p>
+	 *
 	 * @param dtoTask
-	 *            RequestBody: a JSON containing "description", "status_id" and
-	 *            "user"
-	 * @return HttpStatus 201 (CREATED) and newly created task or HttpStatus 400
-	 *         (BAD_REQUEST) and error message if JSON does not contain all the
-	 *         fields.
+	 *            the {@link DTOTask} object containing the task data to be
+	 *            validated and persisted
+	 * @return a {@link ResponseEntity} containing the newly created
+	 *         {@link Task} if successful, or an error message if the creation
+	 *         fails
+	 * @throws IllegalArgumentException
+	 *             if the data in the DTO is invalid or incomplete
 	 */
 	@PostMapping("/tasks")
 	public ResponseEntity<?> create(@RequestBody DTOTask dtoTask) {
@@ -142,14 +176,41 @@ public class TaskRestController {
 	// UPDATE
 
 	/**
-	 * Updates an existing task. The task to update is retrieved by id, provided
-	 * via DTO. If the provided id is not valid, returns an error message.
-	 * 
-	 * @param dtoTask
-	 *            RequestBody: a JSON containing "description", "status_id" and
-	 *            "id"
-	 * @return HttpStatus 200 (OK) and updated task or HttpStatus 404
-	 *         (NOT_FOUND) if task is not found.
+	 * Updates the specified {@link Task} entity based on the provided
+	 * {@link DTOTask} data.
+	 * <p>
+	 * The task is first retrieved by its ID. If the task does not exist, a
+	 * {@link HttpStatus#NOT_FOUND} response is returned. If the task has
+	 * already been marked as deleted, a {@link HttpStatus#BAD_REQUEST} response
+	 * is returned, indicating that the task cannot be updated.
+	 * </p>
+	 * <p>
+	 * If the {@link DTOTask} contains a status update, the task's status will
+	 * be updated. However, if the status is set to "deleted" (status ID 4), an
+	 * error message is returned, as tasks marked as deleted cannot be updated
+	 * through a PATCH request.
+	 * </p>
+	 * <p>
+	 * If the {@link DTOTask} contains a non-null description, the task's
+	 * description will be updated.
+	 * </p>
+	 * <p>
+	 * Upon successful update, the task is returned in the response with an
+	 * {@link HttpStatus#OK} status.
+	 * </p>
+	 *
+	 * @param id
+	 *            the ID of the task to be updated
+	 * @param dto
+	 *            the {@link DTOTask} object containing the updated data (status
+	 *            or description)
+	 * @return a {@link ResponseEntity} containing the updated {@link Task} if
+	 *         successful, or an error message if any validation fails
+	 * @throws NoSuchElementException
+	 *             if no task with the provided ID is found
+	 * @throws IllegalArgumentException
+	 *             if the status ID or description in the {@link DTOTask} is
+	 *             invalid
 	 */
 	@PatchMapping("tasks/{id}")
 	public ResponseEntity<?> update(@PathVariable("id") long id,
@@ -206,12 +267,24 @@ public class TaskRestController {
 	// DELETE
 
 	/**
-	 * Marks the task having the provided ID as "DELETED".
-	 * 
+	 * Marks the {@link Task} with the specified ID as deleted.
+	 * <p>
+	 * The task is first retrieved from the database using the provided ID. If
+	 * no task with the given ID exists, a {@link HttpStatus#NOT_FOUND} response
+	 * is returned.
+	 * </p>
+	 * <p>
+	 * If the task is found, it is marked as deleted by setting its
+	 * {@code status} to "DELETED" (ID 4), its {@code deletedAt} timestamp to
+	 * the current time, and its {@code isDeleted} flag to {@code true}. The
+	 * task is then persisted with the updated values.
+	 * </p>
+	 *
 	 * @param id
-	 *            ID of the task to be deleted
-	 * @return HttpStatus 200 (OK) and confirmation message or HttpStatus 404
-	 *         (NOT_FOUND) and error message if task is not found.
+	 *            the ID of the {@link Task} to be marked as deleted
+	 * @return a {@link ResponseEntity} containing a success message if the task
+	 *         was deleted, or an error message with
+	 *         {@link HttpStatus#NOT_FOUND} if the task does not exist
 	 */
 	@DeleteMapping("tasks/{id}")
 	public ResponseEntity<String> delete(@PathVariable("id") long id) {
