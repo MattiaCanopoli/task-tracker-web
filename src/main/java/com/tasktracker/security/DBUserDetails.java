@@ -15,13 +15,11 @@ public class DBUserDetails implements UserDetails {
 	
 	private final String username;
 	private  final String password;
-	private final long id;
 	private final Set<GrantedAuthority> authorities;
 	
 	public DBUserDetails(User user) {
 		this.username = user.getUsername();
 		this.password = user.getPassword();
-		this.id=user.getId();
 		this.authorities = new HashSet<GrantedAuthority>();
 		for (Role role : user.getRoles()) {
 			this.authorities.add(new SimpleGrantedAuthority(role.getName()));
