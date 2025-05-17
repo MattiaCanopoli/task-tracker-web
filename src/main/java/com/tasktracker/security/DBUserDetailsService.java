@@ -22,7 +22,7 @@ public class DBUserDetailsService implements UserDetailsService {
 			throws UsernameNotFoundException {
 		Optional<User> user = userRepo.findByUsername(username);
 		
-		if (user==null) {
+		if (!user.isPresent()) {
 			throw new UsernameNotFoundException("User "+username+" not found");
 		}
 		
