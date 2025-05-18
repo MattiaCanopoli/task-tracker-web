@@ -55,7 +55,7 @@ public class Task {
 
 	@NotNull
 	@ManyToOne
-	@JoinColumn(nullable = false)
+	@JoinColumn(nullable = false, name="user_id")
 	@JsonManagedReference
 	private User user;
 
