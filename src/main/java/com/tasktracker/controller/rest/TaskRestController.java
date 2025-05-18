@@ -59,7 +59,7 @@ public class TaskRestController {
 	 *             if the provided status does not correspond to an existing
 	 *             status
 	 */
-	@GetMapping("/tasks")
+	@GetMapping("tasks")
 	public ResponseEntity<?> list(
 			@RequestParam(name = "status", required = false) String status) {
 		List<Task> tasks;
@@ -169,7 +169,7 @@ public class TaskRestController {
 	 * @throws IllegalArgumentException
 	 *             if the data in the DTO is invalid or incomplete
 	 */
-	@PostMapping("/tasks")
+	@PostMapping("tasks")
 	public ResponseEntity<?> create(@RequestBody DTOTask dtoTask) {
 		logger.info("Attempting to create a new task...");
 		Task task = new Task();
