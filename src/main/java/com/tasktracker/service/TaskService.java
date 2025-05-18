@@ -12,6 +12,7 @@ import com.tasktracker.dto.DTOTask;
 import com.tasktracker.model.Status;
 import com.tasktracker.model.Task;
 import com.tasktracker.repository.TaskRepo;
+import com.tasktracker.security.model.User;
 
 @Service
 public class TaskService {
@@ -33,6 +34,10 @@ public class TaskService {
 	 */
 	public List<Task> getTasks() {
 		return taskRepo.findByisDeletedFalse();
+	}
+	
+	public List<Task> getByUserID(long userId){
+		return taskRepo.findByUserId(userId);
 	}
 
 	/**
@@ -123,18 +128,14 @@ public class TaskService {
 	 * @throws IllegalArgumentException
 	 *             if the description, user, or status ID is invalid
 	 */
-	public Task createFromDTO(DTOTask dto) throws IllegalArgumentException {
+	public Task createFromDTO(DTOTask dto, User user) throws IllegalArgumentException {
 
 		//validate DTO's description field. if it's not valid, exception is thrown
 		if (dto.getDescription() == null || dto.getDescription().isEmpty()) {
 			throw new IllegalArgumentException(
 					"Description cannot be null. Creation request failed.");
 		}
-//		//validate DTO's user field. if it's not valid, exception is thrown
-//		if (dto.getUser() == null || dto.getUser().isEmpty()) {
-//			throw new IllegalArgumentException(
-//					"User cannot be null. Creation request failed.");
-//		}
+		
 		//validate DTO's status_id field. if it's not valid, exception is thrown
 		if (statusService.findStatusById(dto.getStatusID()) == null) {
 			throw new IllegalArgumentException(
@@ -143,6 +144,7 @@ public class TaskService {
 		}
 		//instantiate a new task using DTO's values
 		Task task = new Task();
+		task.setUser(user);
 		task.setDescription(dto.getDescription());
 		task.setStatus(statusService.findStatusById(dto.getStatusID()));
 //		task.setUser(dto.getUser());

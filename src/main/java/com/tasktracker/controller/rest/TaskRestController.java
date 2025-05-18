@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -19,7 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tasktracker.dto.DTOTask;
 import com.tasktracker.model.Task;
-
+import com.tasktracker.security.model.User;
+import com.tasktracker.security.service.UserService;
 import com.tasktracker.service.TaskService;
 
 //@CrossOrigin
@@ -30,9 +32,11 @@ public class TaskRestController {
 	private static final Logger logger = LoggerFactory
 			.getLogger(TaskRestController.class);
 	private final TaskService tService;
+	private final UserService uService;
 
-	public TaskRestController(TaskService tService) {
+	public TaskRestController(TaskService tService, UserService uService) {
 		this.tService = tService;
+		this.uService = uService;
 	}
 
 	// READ (multiple)
@@ -61,9 +65,10 @@ public class TaskRestController {
 	 */
 	@GetMapping("tasks")
 	public ResponseEntity<?> list(
-			@RequestParam(name = "status", required = false) String status) {
+			@RequestParam(name = "status", required = false) String status,
+			Authentication auth) {
 		List<Task> tasks;
-
+		// TODO: filter password by user and status
 		if (status != null && !status.isEmpty()) {
 			logger.info("Attempting to retrieve tasks with \"{}\" status",
 					status);
@@ -82,7 +87,8 @@ public class TaskRestController {
 			}
 			// if status is not specified, all tasks are retrieved
 		} else {
-			tasks = tService.getTasks();
+			long id = uService.getIdByUsername(auth.getName());
+			tasks = tService.getByUserID(id);
 			logger.info("Attempting to retrieve all tasks");
 		}
 
@@ -170,20 +176,24 @@ public class TaskRestController {
 	 *             if the data in the DTO is invalid or incomplete
 	 */
 	@PostMapping("tasks")
-	public ResponseEntity<?> create(@RequestBody DTOTask dtoTask) {
+	public ResponseEntity<?> create(@RequestBody DTOTask dtoTask,
+			Authentication auth) {
 		logger.info("Attempting to create a new task...");
 		Task task = new Task();
 		// DTO's fields (description, user, status_id) are validated. if any of
-		// the field is not valid, the exception is caught and a ResponseEntity with HttpStatus 400
+		// the field is not valid, the exception is caught and a ResponseEntity
+		// with HttpStatus 400
 		// (BAD_REQUEST) and an error message is returned
 		try {
-			task = tService.createFromDTO(dtoTask);
+			User user = uService.getByUsername(auth.getName());
+			task = tService.createFromDTO(dtoTask, user);
 		} catch (IllegalArgumentException e) {
 			logger.error(e.getMessage());
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 
 		}
-		//a ResponseEntity with HttpStatus 201 (CREATED) and the new task is returned
+		// a ResponseEntity with HttpStatus 201 (CREATED) and the new task is
+		// returned
 		logger.info("Task successfully created with ID: {}", task.getId());
 		return new ResponseEntity<>(task, HttpStatus.CREATED);
 	}
@@ -243,23 +253,27 @@ public class TaskRestController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 
-		//task status is checked. if is DELETED, a a ResponseEntity with HttpStatus 400 (BAD_REQUEST) and an error message is returned
+		// task status is checked. if is DELETED, a a ResponseEntity with
+		// HttpStatus 400 (BAD_REQUEST) and an error message is returned
 		if (task.isDeleted()) {
 			return new ResponseEntity<>(
 					"Task has already been marked as deleted and cannot be updated.",
 					HttpStatus.BAD_REQUEST);
 		}
-		//if provided, DTO's status_id is validated. if it is not valid, exception is caught and a ResponseEntity with HttpStatus 400 (BAD_REQUEST) and an error message is returned
+		// if provided, DTO's status_id is validated. if it is not valid,
+		// exception is caught and a ResponseEntity with HttpStatus 400
+		// (BAD_REQUEST) and an error message is returned
 		if (dto.getStatusID() > 0) {
 			try {
-				//it's not possible to mark a task as deleted using this method
-				//if status is valid, but is DELETED, a ResponseEntity with HttpStatus 400 (BAD_REQUEST) and an error message is returned
+				// it's not possible to mark a task as deleted using this method
+				// if status is valid, but is DELETED, a ResponseEntity with
+				// HttpStatus 400 (BAD_REQUEST) and an error message is returned
 				if (dto.getStatusID() == 4) {
 					return new ResponseEntity<>(
 							"Cannot update task status to 'deleted' via PATCH. Use DELETE instead.",
 							HttpStatus.BAD_REQUEST);
 				}
-				//upon validation, status is updated
+				// upon validation, status is updated
 				tService.updateStatus(task, dto);
 			} catch (IllegalArgumentException e) {
 				logger.error(e.getMessage());
@@ -269,10 +283,12 @@ public class TaskRestController {
 
 		}
 
-		//if provided, DTO's description is validated. if is not valid, exception is caught and a ResponseEntity with HttpStatus 400 (BAD_REQUEST) and an error message is returned
+		// if provided, DTO's description is validated. if is not valid,
+		// exception is caught and a ResponseEntity with HttpStatus 400
+		// (BAD_REQUEST) and an error message is returned
 		if (dto.getDescription() != null && !dto.getDescription().isEmpty()) {
 			try {
-				//upon validation, description is updated
+				// upon validation, description is updated
 				tService.updateDescription(task, dto);
 			} catch (IllegalArgumentException e) {
 				logger.error(e.getMessage());
@@ -281,7 +297,8 @@ public class TaskRestController {
 			}
 		}
 
-		//a ResponseEntity with HttpStatus 200 (OK) and the updated task is returned
+		// a ResponseEntity with HttpStatus 200 (OK) and the updated task is
+		// returned
 		logger.info("Successfully updated task: {}", task.toString());
 		return new ResponseEntity<Task>(task, HttpStatus.OK);
 
@@ -325,10 +342,11 @@ public class TaskRestController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 
-		//upon validation, the task with the specified ID is marked ad deleted
+		// upon validation, the task with the specified ID is marked ad deleted
 		tService.markAsDeleted(task);
 		logger.info("Task with ID {} marked as deleted", id);
-		//a ResponseEntity with HttpStatus 200 and a confirmation message is returned
+		// a ResponseEntity with HttpStatus 200 and a confirmation message is
+		// returned
 		return new ResponseEntity<>(
 				"Task with ID " + task.getId() + " successfully deleted",
 				HttpStatus.OK);
