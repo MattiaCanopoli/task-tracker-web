@@ -69,6 +69,8 @@ public class TaskRestController {
 			Authentication auth) {
 		List<Task> tasks;
 		// TODO: filter password by user and status
+		long id = uService.getIdByUsername(auth.getName());
+		
 		if (status != null && !status.isEmpty()) {
 			logger.info("Attempting to retrieve tasks with \"{}\" status",
 					status);
@@ -77,7 +79,7 @@ public class TaskRestController {
 			// and a ResponseEntity with HttpStatus 400 (BAD_REQUEST) and an
 			// error message is returned
 			try {
-				tasks = tService.getByStatusName(status);
+				tasks = tService.getByUserAndStatus(id,status);
 
 			} catch (IllegalArgumentException e) {
 				logger.error(e.getMessage());
@@ -87,7 +89,7 @@ public class TaskRestController {
 			}
 			// if status is not specified, all tasks are retrieved
 		} else {
-			long id = uService.getIdByUsername(auth.getName());
+			
 			tasks = tService.getByUserID(id);
 			logger.info("Attempting to retrieve all tasks");
 		}
