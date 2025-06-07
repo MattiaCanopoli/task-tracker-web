@@ -119,14 +119,20 @@ public class TaskRestController {
 	 * error message.
 	 * </p>
 	 * <p>
-	 * If the task is found, the task details are returned in the response with
-	 * a {@link HttpStatus#OK} status.
+	 * If the task is found, the ownership is verified against the currently authenticated user.
+	 * If the user is not the owner, a {@link HttpStatus#UNAUTHORIZED} response is returned.
+	 * </p>
+	 * <p>
+	 * If the task exists and ownership is verified, the task details are returned in the response
+	 * with a {@link HttpStatus#OK} status.
 	 * </p>
 	 *
 	 * @param id
 	 *            the ID of the {@link Task} to retrieve
+	 * @param auth
+	 *            the authentication object representing the current user
 	 * @return a {@link ResponseEntity} containing the {@link Task} details if
-	 *         found, or an error message if not found
+	 *         found and authorized, or an error message otherwise
 	 * @throws NoSuchElementException
 	 *             if the task with the provided ID does not exist
 	 */
@@ -224,6 +230,11 @@ public class TaskRestController {
 	 * is returned, indicating that the task cannot be updated.
 	 * </p>
 	 * <p>
+	 * Before performing any update, the ownership of the task is verified against the
+	 * currently authenticated user. If the user is not the owner, a
+	 * {@link HttpStatus#UNAUTHORIZED} response is returned.
+	 * </p>
+	 * <p>
 	 * If the {@link DTOTask} contains a status update, the task's status will
 	 * be updated. However, if the status is set to "deleted" (status ID 4), an
 	 * error message is returned, as tasks marked as deleted cannot be updated
@@ -243,8 +254,10 @@ public class TaskRestController {
 	 * @param dto
 	 *            the {@link DTOTask} object containing the updated data (status
 	 *            or description)
+	 * @param auth
+	 *            the authentication object representing the current user
 	 * @return a {@link ResponseEntity} containing the updated {@link Task} if
-	 *         successful, or an error message if any validation fails
+	 *         successful, or an error message if any validation fails or if the user is not authorized
 	 * @throws NoSuchElementException
 	 *             if no task with the provided ID is found
 	 * @throws IllegalArgumentException
@@ -339,17 +352,25 @@ public class TaskRestController {
 	 * is returned.
 	 * </p>
 	 * <p>
-	 * If the task is found, it is marked as deleted by setting its
-	 * {@code status} to "DELETED" (ID 4), its {@code deletedAt} timestamp to
-	 * the current time, and its {@code isDeleted} flag to {@code true}. The
-	 * task is then persisted with the updated values.
+	 * Before marking the task as deleted, the controller verifies that the
+	 * currently authenticated user is the owner of the task. If the user is not
+	 * the owner, a {@link HttpStatus#UNAUTHORIZED} response is returned.
+	 * </p>
+	 * <p>
+	 * If the task is found and the ownership check passes, it is marked as deleted by:
+	 * setting its {@code status} to "DELETED" (ID 4),
+	 * its {@code deletedAt} timestamp to the current time, and
+	 * its {@code isDeleted} flag to {@code true}. The task is then persisted with the updated values.
 	 * </p>
 	 *
 	 * @param id
 	 *            the ID of the {@link Task} to be marked as deleted
+	 * @param auth
+	 *            the authentication object representing the current user
 	 * @return a {@link ResponseEntity} containing a success message if the task
 	 *         was deleted, or an error message with
-	 *         {@link HttpStatus#NOT_FOUND} if the task does not exist
+	 *         {@link HttpStatus#NOT_FOUND} if the task does not exist,
+	 *         or {@link HttpStatus#UNAUTHORIZED} if the user is not the owner
 	 */
 	@DeleteMapping("tasks/{id}")
 	public ResponseEntity<String> delete(@PathVariable("id") long id, Authentication auth) {
