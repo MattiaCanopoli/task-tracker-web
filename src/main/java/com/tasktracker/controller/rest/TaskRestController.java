@@ -3,7 +3,6 @@ package com.tasktracker.controller.rest;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
