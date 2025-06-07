@@ -22,42 +22,71 @@ import com.tasktracker.exception.UserNotFoundException;
 import com.tasktracker.security.model.User;
 import com.tasktracker.security.service.UserService;
 
+/**
+ * REST controller for managing {@link User} entities.
+ * <p>
+ * Provides endpoints to list all users, retrieve user details by ID, and create new users.
+ * Access control ensures users can view only their own details unless they have admin privileges.
+ * </p>
+ * 
+ * @implSpec
+ * This controller delegates user-related business logic to {@link UserService} and
+ * handles HTTP responses based on service results and exceptions.
+ */
 @RestController
 @RequestMapping("/user")
 public class UserController {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(UserController.class);
+	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
 	private final UserService uService;
 
+	/**
+	 * Constructs a new {@code UserController} with the specified user service.
+	 *
+	 * @param uService the user service to delegate business logic to
+	 */
 	public UserController(UserService uService) {
 		this.uService = uService;
 	}
 
-	// READ
-
+	/**
+	 * Retrieves all users.
+	 * 
+	 * Only an admin can access this endpoint.
+	 *
+	 * @return a {@link ResponseEntity} containing the list of all users with HTTP status
+	 *         {@code 200 OK}, or a message with status {@code 204 No Content} if no users exist
+	 */
 	@GetMapping
 	public ResponseEntity<?> getUsers() {
 
 		List<User> users = uService.getAllUsers();
 
 		if (users.isEmpty()) {
-			return new ResponseEntity<>("No users found",
-					HttpStatus.NO_CONTENT);
+			return new ResponseEntity<>("No users found.", HttpStatus.NO_CONTENT);
 		}
 
 		return new ResponseEntity<>(users, HttpStatus.OK);
 
 	}
 
-	// SHOW
-
+	/**
+	 * Retrieves the details of a user by their ID.
+	 * <p>
+	 * Only an admin or the user themselves can access this endpoint.
+	 * </p>
+	 *
+	 * @param id   the ID of the user to retrieve
+	 * @param auth the authentication object representing the currently authenticated user
+	 * @return a {@link ResponseEntity} with the user details and HTTP status {@code 200 OK} if found,
+	 *         {@code 400 Bad Request} if the user does not exist, or {@code 401 Unauthorized} if
+	 *         the caller is not authorized
+	 */
 	@GetMapping("/{id}")
-	public ResponseEntity<?> detail(@PathVariable("id") long id,
-			Authentication auth) {
+	public ResponseEntity<?> detail(@PathVariable("id") long id, Authentication auth) {
 
-		logger.info("user {} attempts to retrieve user {} information",auth.getName(), id);
+		logger.info("User '{}' attempts to retrieve information for user '{}'", auth.getName(), id);
 
 		long userId = uService.getIdByUsername(auth.getName());
 
@@ -66,22 +95,29 @@ public class UserController {
 			try {
 				User user = uService.getUserByID(id);
 
-				logger.info("successfully retrieved user {} information",id);
+				logger.info("Successfully retrieved information for user '{}'", id);
 				return new ResponseEntity<>(user, HttpStatus.OK);
 
 			} catch (UserNotFoundException e) {
 
 				logger.error(e.getMessage());
-				return new ResponseEntity<>(e.getMessage(),
-						HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 			}
 		}
 
-		logger.warn("user {} is not authorized to retrieve user {} information", auth.getName(), id);
-		return new ResponseEntity<>("not auth", HttpStatus.UNAUTHORIZED);
+		logger.warn("User '{}' is not authorized to retrieve information for user '{}'", auth.getName(), id);
+		return new ResponseEntity<>("Unauthorized access", HttpStatus.UNAUTHORIZED);
 
 	}
 
+	/**
+	 * Creates a new user.
+	 *
+	 * @param user the DTO containing user data to create
+	 * @return a {@link ResponseEntity} with the created user and HTTP status {@code 201 Created}
+	 * @throws UserAlreadyExistsException     if a user with the same username already exists
+	 * @throws InvalidPasswordLengthException if the provided password length is invalid
+	 */
 	@PostMapping
 	public ResponseEntity<?> createUser(@Validated @RequestBody DTOUser user) {
 
@@ -91,12 +127,10 @@ public class UserController {
 			return new ResponseEntity<>(newUser, HttpStatus.CREATED);
 
 		} catch (UserAlreadyExistsException e) {
-			return new ResponseEntity<>(e.getMessage(),
-					HttpStatus.CONFLICT);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
 
 		} catch (InvalidPasswordLengthException e) {
-			return new ResponseEntity<>(e.getMessage(),
-					HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 
 	}
