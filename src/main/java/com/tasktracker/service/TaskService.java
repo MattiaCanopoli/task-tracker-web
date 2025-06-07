@@ -303,5 +303,17 @@ public class TaskService {
 		// saves the task in the DB
 		taskRepo.save(task);
 	}
+	
+	public boolean isUserTask(Task task, User user) {
+		
+		long userId= user.getId();
+		long taskUserId = task.getUser().getId();
+		
+		if (userId == taskUserId) {
+			return true;
+		}
+		
+		return false;
+	}
 
 }

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -130,26 +131,37 @@ public class TaskRestController {
 	 *             if the task with the provided ID does not exist
 	 */
 	@GetMapping("tasks/{id}")
-	public ResponseEntity<?> detail(@PathVariable("id") Long id) {
+	public ResponseEntity<?> detail(@PathVariable("id") Long id, Authentication auth) {
 
 		logger.info("Attempting to retrieve task with ID {}...", id);
 
-		Task t = new Task();
+		Task task = new Task();
 
 		// the provided ID is validated. if is not valid, the exception is
 		// caught and a ResponseEntity with HttpStatus 404 (NOT_FOUND) and an
 		// error message is returned
 		try {
-			t = tService.getByID(id);
+			task = tService.getByID(id);
 		} catch (NoSuchElementException e) {
 			logger.error(e.getMessage());
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
+		
+		// retrieve current authenticated user and verify that is owner of the task to retrieve.
+		// if verification fails (isUserTask return false), a ResponseEntity with HttpStatus 403 (UNAUTHORIZED) and an
+		// error message is returned
+		User user=uService.getByUsername(auth.getName());
+			
+		if (!tService.isUserTask(task, user)) {
+			logger.error("user {} attempted to access task with id {}", auth.getName(), id);
+			return new ResponseEntity<>("Cannot access task with id " + id + " with current user", HttpStatus.UNAUTHORIZED);
+		}
+		
 		// a ResponseEntity with HttpStatus 200 (OK) and the task with the
 		// specified ID is returned
 		logger.info("Task with id {} found. Task description: {}", id,
-				t.getDescription());
-		return new ResponseEntity<>(t, HttpStatus.OK);
+				task.getDescription());
+		return new ResponseEntity<>(task, HttpStatus.OK);
 
 	}
 
@@ -241,7 +253,7 @@ public class TaskRestController {
 	 */
 	@PatchMapping("tasks/{id}")
 	public ResponseEntity<?> update(@PathVariable("id") long id,
-			@RequestBody DTOTask dto) {
+			@RequestBody DTOTask dto, Authentication auth) {
 
 		logger.info("Attempting to retrieve task with ID {}...", id);
 		Task task = new Task();
@@ -254,6 +266,16 @@ public class TaskRestController {
 		} catch (NoSuchElementException e) {
 			logger.error(e.getMessage());
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		}
+		
+		// retrieve current authenticated user and verify that is owner of the task to retrieve.
+		// if verification fails (isUserTask return false), a ResponseEntity with HttpStatus 403 (UNAUTHORIZED) and an
+		// error message is returned
+		User user=uService.getByUsername(auth.getName());
+			
+		if (!tService.isUserTask(task, user)) {
+			logger.error("user {} attempted to update task with id {}", auth.getName(), id);
+			return new ResponseEntity<>("Cannot update task with id " + id + " with current user", HttpStatus.UNAUTHORIZED);
 		}
 
 		// task status is checked. if is DELETED, a a ResponseEntity with
@@ -330,7 +352,7 @@ public class TaskRestController {
 	 *         {@link HttpStatus#NOT_FOUND} if the task does not exist
 	 */
 	@DeleteMapping("tasks/{id}")
-	public ResponseEntity<String> delete(@PathVariable("id") long id) {
+	public ResponseEntity<String> delete(@PathVariable("id") long id, Authentication auth) {
 
 		logger.info("Attempting to delete task with ID: {}", id);
 		Task task = new Task();
@@ -343,6 +365,16 @@ public class TaskRestController {
 		} catch (NoSuchElementException e) {
 			logger.error(e.getMessage());
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		}
+		
+		// retrieve current authenticated user and verify that is owner of the task to retrieve.
+		// if verification fails (isUserTask return false), a ResponseEntity with HttpStatus 403 (UNAUTHORIZED) and an
+		// error message is returned
+		User user=uService.getByUsername(auth.getName());
+			
+		if (!tService.isUserTask(task, user)) {
+			logger.error("user {} attempted to delete task with id {}", auth.getName(), id);
+			return new ResponseEntity<>("Cannot delete task with id " + id + " with current user", HttpStatus.UNAUTHORIZED);
 		}
 
 		// upon validation, the task with the specified ID is marked ad deleted
