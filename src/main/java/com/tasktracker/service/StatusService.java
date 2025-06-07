@@ -21,7 +21,7 @@ public class StatusService {
 
 	/**
 	 * Retrieve a status object by its name.
-	 * 
+	 *
 	 * @param statusName
 	 * @return a Status object
 	 * @return null if there is no Status object with such name
@@ -38,7 +38,7 @@ public class StatusService {
 
 	/**
 	 * Retrieves a status by its ID
-	 * 
+	 *
 	 * @param statusId
 	 * @return a Status object
 	 * @return null if there is no Status object with such ID

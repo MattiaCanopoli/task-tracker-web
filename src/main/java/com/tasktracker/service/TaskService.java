@@ -289,7 +289,7 @@ public class TaskService {
 	 * After performing these updates, the {@link Task} is persisted to the
 	 * task_tracker_web database.
 	 * </p>
-	 * 
+	 *
 	 * @param task
 	 *            the {@link Task} to be marked as {@code DELETED}
 	 */
@@ -303,16 +303,16 @@ public class TaskService {
 		// saves the task in the DB
 		taskRepo.save(task);
 	}
-	
+
 	public boolean isUserTask(Task task, User user) {
-		
+
 		long userId= user.getId();
 		long taskUserId = task.getUser().getId();
-		
+
 		if (userId == taskUserId) {
 			return true;
 		}
-		
+
 		return false;
 	}
 

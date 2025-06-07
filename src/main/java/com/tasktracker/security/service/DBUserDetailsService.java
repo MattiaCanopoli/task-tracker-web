@@ -13,9 +13,9 @@ import com.tasktracker.security.model.User;
 
 @Service
 public class DBUserDetailsService implements UserDetailsService {
-	
+
 	private final UserRepo userRepo;
-	
+
 	public DBUserDetailsService(UserRepo userRepo) {
 		this.userRepo=userRepo;
 	}
@@ -24,11 +24,11 @@ public class DBUserDetailsService implements UserDetailsService {
 	public UserDetails loadUserByUsername(String username)
 			throws UsernameNotFoundException {
 		Optional<User> user = userRepo.findByUsername(username);
-		
+
 		if (!user.isPresent()) {
 			throw new UsernameNotFoundException("User "+username+" not found");
 		}
-		
+
 		return new DBUserDetails(user.get());
 	}
 

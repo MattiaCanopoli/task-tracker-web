@@ -16,7 +16,6 @@ import com.tasktracker.exception.InvalidPasswordLengthException;
 import com.tasktracker.exception.UserAlreadyExistsException;
 import com.tasktracker.exception.UserNotFoundException;
 import com.tasktracker.repository.UserRepo;
-import com.tasktracker.security.model.Role;
 import com.tasktracker.security.model.User;
 
 @Service

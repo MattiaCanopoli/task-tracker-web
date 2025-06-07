@@ -12,19 +12,19 @@ import com.tasktracker.security.model.Role;
 import com.tasktracker.security.model.User;
 
 public class DBUserDetails implements UserDetails {
-	
+
 	private final String username;
 	private  final String password;
 	private final Set<GrantedAuthority> authorities;
-	
+
 	public DBUserDetails(User user) {
 		this.username = user.getUsername();
 		this.password = user.getPassword();
-		this.authorities = new HashSet<GrantedAuthority>();
+		this.authorities = new HashSet<>();
 		for (Role role : user.getRoles()) {
 			this.authorities.add(new SimpleGrantedAuthority(role.getName()));
 		}
-		
+
 	}
 
 	@Override

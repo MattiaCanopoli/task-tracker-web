@@ -14,23 +14,20 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 @Entity
 public class User {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-	
+
 	@NotEmpty
 	@Column(nullable=false, unique=true)
 	private String username;
-	
+
 	@NotEmpty
 	@Column(nullable=false, unique=true)
 	private String email;
@@ -39,17 +36,17 @@ public class User {
 	@JsonIgnore
 	@Column(nullable=false)
 	private String password;
-	
+
 	@ManyToMany(fetch = FetchType.EAGER)
 	private Set<Role> roles;
-	
+
 	@JsonBackReference
 	@OneToMany(mappedBy = "user")
 	private List<Task> tasks;
 
-	
+
 //	public User() {
-//		
+//
 //	}
 
 	public long getId() {
@@ -99,8 +96,8 @@ public class User {
 	public void setTasks(List<Task> tasks) {
 		this.tasks = tasks;
 	}
-	
-	
 
-	
+
+
+
 }

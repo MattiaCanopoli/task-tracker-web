@@ -8,11 +8,11 @@ import jakarta.validation.constraints.NotNull;
 
 @Entity
 public class Role {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
-	
+
 	@NotNull
 	private String name;
 
@@ -31,7 +31,7 @@ public class Role {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
-	
+
+
 
 }

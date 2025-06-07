@@ -6,21 +6,21 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class DTOUser {
-	
+
 	@NotNull
 	@NotEmpty
 	private String username;
-	
+
 	@Email
 	@NotEmpty
 	@NotNull
 	private String email;
-	
+
 	@NotNull
 	@NotEmpty
 	@Size(min=6, max=24)
 	private String password;
-	
+
 	public String getUsername() {
 		return username;
 	}
