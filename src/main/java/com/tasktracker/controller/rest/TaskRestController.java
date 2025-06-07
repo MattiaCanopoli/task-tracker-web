@@ -168,7 +168,8 @@ public class TaskRestController {
 	 *
 	 * @param dtoTask
 	 *            the {@link DTOTask} object containing the task data to be
-	 *            validated and persisted
+	 *            validated and persisted. The request body should be a json
+	 *            with the format "{"description":"task description string", "status_id":int}"
 	 * @return a {@link ResponseEntity} containing the newly created
 	 *         {@link Task} if successful, or an error message if the creation
 	 *         fails
