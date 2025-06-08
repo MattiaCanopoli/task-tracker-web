@@ -31,14 +31,21 @@ import com.tasktracker.security.service.UserService;
 /**
  * REST controller for managing {@link User} entities.
  * <p>
- * Provides endpoints to list all users, retrieve user details by ID, and create
- * new users. Access control ensures users can view only their own details
- * unless they have admin privileges.
+ * Provides endpoints to:
+ * <ul>
+ *   <li>List all users (admin only)</li>
+ *   <li>Retrieve user details by ID (admin or owner)</li>
+ *   <li>Create a new user</li>
+ *   <li>Update user information (self)</li>
+ *   <li>Delete a user (admin only)</li>
+ *   <li>Add or remove roles from a user (admin only)</li>
+ * </ul>
+ * Access control ensures that sensitive operations are restricted appropriately.
  * </p>
- * 
- * @implSpec This controller delegates user-related business logic to
- *           {@link UserService} and handles HTTP responses based on service
- *           results and exceptions.
+ *
+ * @implSpec
+ * This controller delegates user-related business logic to {@link UserService}
+ * and handles HTTP responses based on service results and exceptions.
  */
 @RestController
 @RequestMapping("/user")
@@ -59,6 +66,8 @@ public class UserController {
 		this.uService = uService;
 	}
 
+	//READ
+	
 	/**
 	 * Retrieves all users.
 	 * 
@@ -85,6 +94,8 @@ public class UserController {
 		return new ResponseEntity<>(users, HttpStatus.OK);
 
 	}
+	
+	//SHOW
 
 	/**
 	 * Retrieves the details of a user by their ID.
@@ -136,6 +147,8 @@ public class UserController {
 				HttpStatus.UNAUTHORIZED);
 
 	}
+	
+	//CREATE
 
 	/**
 	 * Creates a new user.
@@ -172,6 +185,16 @@ public class UserController {
 
 	}
 
+	//UPDATE
+	
+	/**
+	 * Updates the currently authenticated user's information.
+	 *
+	 * @param update the DTO containing updated user information
+	 * @param auth   the authentication object representing the current user
+	 * @return a {@link ResponseEntity} with the updated user and HTTP status {@code 200 OK},
+	 *         or {@code 401 Unauthorized} if the password is invalid
+	 */
 	@PatchMapping
 	public ResponseEntity<?> update(
 			@Validated @RequestBody DTOUserUpdate update, Authentication auth) {
@@ -192,34 +215,20 @@ public class UserController {
 		return new ResponseEntity<>(user, HttpStatus.OK);
 
 	}
-	@DeleteMapping("/{id}")
-	public ResponseEntity<?> delete(@PathVariable("id") long id,
-			Authentication auth) {
-
-		logger.info("{} is attempting to delete user with ID '{}'",
-				auth.getName(), id);
-
-		if (!uService.isAdmin(auth)) {
-			logger.error("{} is not authorized to delete users",
-					auth.getName());
-			return new ResponseEntity<>(
-					"Current user is not authorized to delete users",
-					HttpStatus.UNAUTHORIZED);
-		}
-
-		try {
-			uService.deleteById(id);
-			logger.info("{} successfully deleted user with ID '{}'",
-					auth.getName(), id);
-			return new ResponseEntity<>("User with ID " + id
-					+ " has been deleted by " + auth.getName(), HttpStatus.OK);
-		} catch (UserNotFoundException e) {
-			logger.error(e.getMessage());
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-		}
-
-	}
-
+	
+	/**
+	 * Adds a role to a specific user.
+	 * <p>
+	 * Only an admin can perform this operation.
+	 * </p>
+	 *
+	 * @param id    the ID of the user to modify
+	 * @param role  the DTO containing the role to add
+	 * @param auth  the authentication object representing the current user
+	 * @return a {@link ResponseEntity} with the updated user and HTTP status {@code 200 OK},
+	 *         or {@code 400 Bad Request} if the user or role is invalid,
+	 *         or {@code 401 Unauthorized} if the caller is not authorized
+	 */
 	@PatchMapping("/roles/add/{id}")
 	public ResponseEntity<?> addRole(@PathVariable("id") long id,@Validated @RequestBody
 			DTORoleUpdate role, Authentication auth) {
@@ -246,6 +255,19 @@ public class UserController {
 		return new ResponseEntity<>(user, HttpStatus.OK);
 	}
 	
+	/**
+	 * Removes a role from a specific user.
+	 * <p>
+	 * Only an admin can perform this operation.
+	 * </p>
+	 *
+	 * @param id    the ID of the user to modify
+	 * @param role  the DTO containing the role to remove
+	 * @param auth  the authentication object representing the current user
+	 * @return a {@link ResponseEntity} with the updated user and HTTP status {@code 200 OK},
+	 *         or {@code 400 Bad Request} if the user or role is invalid,
+	 *         or {@code 401 Unauthorized} if the caller is not authorized
+	 */
 	@PatchMapping("/roles/remove/{id}")
 	public ResponseEntity<?> removeRole(@PathVariable("id") long id,@Validated @RequestBody DTORoleUpdate role, Authentication auth){
 		
@@ -273,5 +295,47 @@ public class UserController {
 					
 		logger.info("{} successfully removed role {} from {}", auth.getName(), role.getRole(), user.getUsername());
 		return new ResponseEntity<>(user, HttpStatus.OK);
+	}
+	
+	//DELETE
+	
+	/**
+	 * Deletes a user by their ID.
+	 * <p>
+	 * Only an admin can access this endpoint.
+	 * </p>
+	 *
+	 * @param id   the ID of the user to delete
+	 * @param auth the authentication object representing the current user
+	 * @return a {@link ResponseEntity} with a confirmation message and HTTP status {@code 200 OK},
+	 *         or {@code 401 Unauthorized} if the caller is not authorized,
+	 *         or {@code 400 Bad Request} if the user does not exist
+	 */
+	@DeleteMapping("/{id}")
+	public ResponseEntity<?> delete(@PathVariable("id") long id,
+			Authentication auth) {
+
+		logger.info("{} is attempting to delete user with ID '{}'",
+				auth.getName(), id);
+
+		if (!uService.isAdmin(auth)) {
+			logger.error("{} is not authorized to delete users",
+					auth.getName());
+			return new ResponseEntity<>(
+					"Current user is not authorized to delete users",
+					HttpStatus.UNAUTHORIZED);
+		}
+
+		try {
+			uService.deleteById(id);
+			logger.info("{} successfully deleted user with ID '{}'",
+					auth.getName(), id);
+			return new ResponseEntity<>("User with ID " + id
+					+ " has been deleted by " + auth.getName(), HttpStatus.OK);
+		} catch (UserNotFoundException e) {
+			logger.error(e.getMessage());
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+
 	}
 }
