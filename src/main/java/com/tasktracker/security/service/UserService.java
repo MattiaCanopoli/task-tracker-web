@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -12,7 +14,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.tasktracker.dto.DTOUser;
-import com.tasktracker.exception.InvalidPasswordLengthException;
+import com.tasktracker.dto.DTOUserUpdate;
+import com.tasktracker.exception.InvalidPasswordException;
 import com.tasktracker.exception.UserAlreadyExistsException;
 import com.tasktracker.exception.UserNotFoundException;
 import com.tasktracker.repository.UserRepo;
@@ -23,6 +26,9 @@ public class UserService {
 
 	private final UserRepo uRepo;
 	private final RoleService rService;
+	private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+	private static final Logger logger = LoggerFactory
+			.getLogger(UserService.class);
 
 	public UserService(UserRepo uRepo, RoleService rService) {
 		this.uRepo = uRepo;
@@ -61,20 +67,18 @@ public class UserService {
 		}
 
 		if (dto.getPassword().length() < 6) {
-			throw new InvalidPasswordLengthException(
+			throw new InvalidPasswordException(
 					"Choosen password is too short. Password should be at least 6 characters long");
 		}
 
 		if (dto.getPassword().length() > 24) {
-			throw new InvalidPasswordLengthException(
+			throw new InvalidPasswordException(
 					"Choosen password is too long. Password should be at most 24 characters long");
 		}
 
 		User user = new User();
 		user.setUsername(dto.getUsername());
 		user.setEmail(dto.getEmail());
-
-		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
 		String password = encoder.encode(dto.getPassword());
 		user.setPassword(password);
@@ -116,5 +120,40 @@ public class UserService {
 		}
 
 		return user.get();
+	}
+
+	public User updateUser(DTOUserUpdate dto, Authentication auth) {
+
+		User currentUser = this.getByUsername(auth.getName());
+		String username = currentUser.getUsername();
+
+		if (!encoder.matches(dto.getCurrentPassword(),
+				currentUser.getPassword())) {
+
+			logger.warn("User '{}' provided incorrect current password",username);
+			throw new InvalidPasswordException("Current password is incorrect");
+		}
+
+		if (dto.getEmail() != null && !dto.getEmail().isEmpty()) {
+			
+			logger.info("User '{}' is updating email from '{}' to '{}'",
+					username, currentUser.getEmail(), dto.getEmail());
+			
+			currentUser.setEmail(dto.getEmail());
+		}
+
+		if (dto.getNewPassword() != null && !dto.getNewPassword().isEmpty()) {
+		
+				logger.info("User '{}' is changing password", username);
+				
+				String newPass = encoder.encode(dto.getNewPassword());
+				currentUser.setPassword(newPass);
+
+		}
+
+		uRepo.save(currentUser);
+
+		return currentUser;
+
 	}
 }

@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,7 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tasktracker.dto.DTOUser;
-import com.tasktracker.exception.InvalidPasswordLengthException;
+import com.tasktracker.dto.DTOUserUpdate;
+import com.tasktracker.exception.InvalidPasswordException;
 import com.tasktracker.exception.UserAlreadyExistsException;
 import com.tasktracker.exception.UserNotFoundException;
 import com.tasktracker.security.model.User;
@@ -116,7 +118,7 @@ public class UserController {
 	 * @param user the DTO containing user data to create
 	 * @return a {@link ResponseEntity} with the created user and HTTP status {@code 201 Created}
 	 * @throws UserAlreadyExistsException     if a user with the same username already exists
-	 * @throws InvalidPasswordLengthException if the provided password length is invalid
+	 * @throws InvalidPasswordException if the provided password length is invalid
 	 */
 	@PostMapping
 	public ResponseEntity<?> createUser(@Validated @RequestBody DTOUser user) {
@@ -129,9 +131,24 @@ public class UserController {
 		} catch (UserAlreadyExistsException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
 
-		} catch (InvalidPasswordLengthException e) {
+		} catch (InvalidPasswordException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 
+	}
+	
+	@PatchMapping
+	public ResponseEntity<?> updateUser (@Validated @RequestBody DTOUserUpdate update,Authentication auth){
+		
+		try {
+			uService.updateUser(update, auth);
+		} catch (InvalidPasswordException e) {
+			return new ResponseEntity<>(e.getMessage(),HttpStatus.UNAUTHORIZED);
+		}
+		
+		User user = uService.getByUsername(auth.getName());
+		
+		return new ResponseEntity<>(user, HttpStatus.OK);
+		
 	}
 }

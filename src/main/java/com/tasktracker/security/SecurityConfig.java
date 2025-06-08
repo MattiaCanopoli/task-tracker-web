@@ -33,6 +33,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/rest/**").hasAnyAuthority("USER", "ADMIN")
                 .requestMatchers(HttpMethod.GET,"/user").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.PATCH,"/user").hasAnyAuthority("USER", "ADMIN")
                 .requestMatchers(HttpMethod.POST,"/user").permitAll()
                 .anyRequest().authenticated()
         );

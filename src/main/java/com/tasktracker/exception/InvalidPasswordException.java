@@ -1,8 +1,8 @@
 package com.tasktracker.exception;
 
-public class InvalidPasswordLengthException extends RuntimeException {
+public class InvalidPasswordException extends RuntimeException {
 
-	public InvalidPasswordLengthException(String message) {
+	public InvalidPasswordException(String message) {
         super(message);
     }
 
