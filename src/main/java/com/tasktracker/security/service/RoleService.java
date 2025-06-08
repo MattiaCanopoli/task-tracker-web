@@ -10,6 +10,16 @@ import com.tasktracker.exception.RoleNotFoundException;
 import com.tasktracker.repository.RoleRepo;
 import com.tasktracker.security.model.Role;
 
+/**
+ * Service class responsible for handling business logic related to {@link Role}
+ * entities. It interacts with the {@link RoleRepo} repository to retrieve roles
+ * by name or ID and throws appropriate exceptions when roles are not found.
+ * <p>
+ * This class also logs each operation for auditing and debugging purposes.
+ * </p>
+ * 
+ * @author 
+ */
 @Service
 public class RoleService {
 
@@ -21,6 +31,18 @@ public class RoleService {
 		this.rRepo = rRepo;
 	}
 
+
+	/**
+	 * Retrieves a {@link Role} entity from the database by its name.
+	 * <p>
+	 * The name is converted to uppercase before querying the database to ensure
+	 * consistency.
+	 * </p>
+	 * 
+	 * @param name the name of the role to retrieve
+	 * @return the {@link Role} entity with the specified name
+	 * @throws RoleNotFoundException if no role with the specified name exists
+	 */
 	public Role getByName(String name) throws RoleNotFoundException {
 
 		logger.info("Attempting to retrieve '{}' role", name.toUpperCase());
@@ -35,6 +57,18 @@ public class RoleService {
 		return role.get();
 	}
 
+
+	/**
+	 * Retrieves a {@link Role} entity from the database by its name.
+	 * <p>
+	 * The name is converted to uppercase before querying the database to ensure
+	 * consistency.
+	 * </p>
+	 * 
+	 * @param name the name of the role to retrieve
+	 * @return the {@link Role} entity with the specified name
+	 * @throws RoleNotFoundException if no role with the specified name exists
+	 */
 	public Role getByID(int id) throws RoleNotFoundException {
 
 		logger.info("Attempting to retrieve role with ID '{}'", id);
