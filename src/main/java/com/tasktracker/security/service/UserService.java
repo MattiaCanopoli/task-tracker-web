@@ -15,10 +15,12 @@ import org.springframework.stereotype.Service;
 
 import com.tasktracker.dto.DTOUser;
 import com.tasktracker.dto.DTOUserUpdate;
+import com.tasktracker.exception.FailedRoleUpdateException;
 import com.tasktracker.exception.InvalidPasswordException;
 import com.tasktracker.exception.UserAlreadyExistsException;
 import com.tasktracker.exception.UserNotFoundException;
 import com.tasktracker.repository.UserRepo;
+import com.tasktracker.security.model.Role;
 import com.tasktracker.security.model.User;
 
 @Service
@@ -167,5 +169,54 @@ public class UserService {
 			User user = this.getUserByID(id);
 			uRepo.delete(user);
 
+	}
+	
+	public User addRole(User user, String roleToAdd) {
+		
+		Set<Role> roles = user.getRoles();
+		logger.info("{} roles retrieved. Found {} roles", user.getUsername(), roles.size());
+		Role role = rService.getByName(roleToAdd);
+		
+		if (roles.contains(role)) {
+			logger.error("{} already has '{}' role. Impossible to add duplicate roles",user.getUsername(),roleToAdd.toUpperCase());
+			throw new FailedRoleUpdateException(user.getUsername() + " already has role '" + roleToAdd + "'");
+		}
+		roles.add(role);		
+		user.setRoles(roles);
+		logger.info("'{}' added to {} roles",roleToAdd.toUpperCase(), user.getUsername());
+		
+		uRepo.save(user);
+		logger.info("{} roles successfully updated", user.getUsername());
+		return user;
+		
+	}
+	
+	public User removeRole (User user, String roleToRemove) {
+		
+		Set<Role> roles = user.getRoles();
+		logger.info("{} roles retrieved. Found {} roles", user.getUsername(), roles.size());
+		
+		if (roles.size()<=1) {
+			logger.error("{} has only {} role. Impossible to remove", user.getUsername(), roles.size());
+			throw new FailedRoleUpdateException("Any user must have at least one role");
+		}
+
+		Role role = rService.getByName(roleToRemove);
+		
+		if (!roles.contains(role)) {
+			logger.error("{} does not have '{}' role.", user.getUsername(), roleToRemove.toUpperCase());
+			throw new FailedRoleUpdateException(user.getUsername() +  " does not have the role '" + role.getName() +"'");
+		}
+		
+		roles.remove(role);		
+		user.setRoles(roles);
+		logger.info("'{}' removed from {} roles",roleToRemove.toUpperCase(), user.getUsername());
+		
+		
+		uRepo.save(user);
+		logger.info("{} roles successfully updated", user.getUsername());
+		
+		return user;
+	
 	}
 }
