@@ -96,6 +96,8 @@ public class UserService {
 	}
 
 	public boolean isAdmin(Authentication auth) {
+		
+		logger.info("Verifing {} authorities",auth.getName());
 
 		Collection<? extends GrantedAuthority> authorities = auth
 				.getAuthorities();
@@ -104,9 +106,13 @@ public class UserService {
 			String role = authority.getAuthority();
 
 			if (role.equals("ADMIN")) {
+				
+				logger.info("{} is ADMIN", auth.getName());
 				return true;
 			}
 		}
+		
+		logger.warn("{} is not ADMIN", auth.getName());
 		return false;
 	}
 

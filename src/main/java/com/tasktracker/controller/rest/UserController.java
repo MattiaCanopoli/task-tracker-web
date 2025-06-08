@@ -62,14 +62,17 @@ public class UserController {
 	 *         {@code 200 OK}, or a message with status {@code 204 No Content} if no users exist
 	 */
 	@GetMapping
-	public ResponseEntity<?> getUsers() {
+	public ResponseEntity<?> list(Authentication auth) {
 
+		logger.info("{} is attempting to retrieve all users information", auth.getName());
 		List<User> users = uService.getAllUsers();
 
 		if (users.isEmpty()) {
+			logger.warn("No user has been found");
 			return new ResponseEntity<>("No users found.", HttpStatus.NO_CONTENT);
 		}
 
+		logger.info("{} users found", users.size());
 		return new ResponseEntity<>(users, HttpStatus.OK);
 
 	}
@@ -98,7 +101,7 @@ public class UserController {
 			try {
 				User user = uService.getUserByID(id);
 
-				logger.info("Successfully retrieved information for user '{}'", id);
+				logger.info("{} successfully retrieved information for user '{}'",auth.getName(), id);
 				return new ResponseEntity<>(user, HttpStatus.OK);
 
 			} catch (UserNotFoundException e) {
@@ -122,47 +125,59 @@ public class UserController {
 	 * @throws InvalidPasswordException if the provided password length is invalid
 	 */
 	@PostMapping
-	public ResponseEntity<?> createUser(@Validated @RequestBody DTOUser user) {
+	public ResponseEntity<?> create(@Validated @RequestBody DTOUser user) {
 
+		logger.info("Attempting to create a new user. Username: {}, e-mail: {}", user.getUsername(), user.getPassword());
 		try {
 
 			User newUser = uService.saveUser(user);
+			
+			logger.info("New user {} successfully created", user.getUsername());
 			return new ResponseEntity<>(newUser, HttpStatus.CREATED);
 
 		} catch (UserAlreadyExistsException e) {
+			logger.error(e.getMessage());
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
 
 		} catch (InvalidPasswordException e) {
+			logger.error(e.getMessage());
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 
 	}
 	
 	@PatchMapping
-	public ResponseEntity<?> updateUser (@Validated @RequestBody DTOUserUpdate update,Authentication auth){
+	public ResponseEntity<?> update (@Validated @RequestBody DTOUserUpdate update,Authentication auth){
 		
+		logger.info("{} is attempting to update his information", auth.getName());
 		try {
 			uService.updateUser(update, auth);
 		} catch (InvalidPasswordException e) {
+			logger.error("Update failed");
 			return new ResponseEntity<>(e.getMessage(),HttpStatus.UNAUTHORIZED);
 		}
 		
 		User user = uService.getByUsername(auth.getName());
-		
+		logger.info("{} successfully updated his information", user.getUsername());
 		return new ResponseEntity<>(user, HttpStatus.OK);
 		
 	}
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> delete (@PathVariable("id") long id, Authentication auth){
 		
+		logger.info("{} is attempting to delete user with ID '{}'", auth.getName(), id);
+		
 		if(!uService.isAdmin(auth)) {
-			return new ResponseEntity<>("Current user is not authorized to delete",HttpStatus.UNAUTHORIZED);
+			logger.error("{} is not authorized to delete users",auth.getName());
+			return new ResponseEntity<>("Current user is not authorized to delete users",HttpStatus.UNAUTHORIZED);
 		}
 		
 		try {
 			uService.deleteById(id);
+			logger.info("{} successfully deleted user with ID '{}'", auth.getName(), id);
 			return new ResponseEntity<>("User with ID " + id + " has been deleted by " + auth.getName(), HttpStatus.OK);
 		} catch (UserNotFoundException e) {
+			logger.error(e.getMessage());
 			return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
 		}
 		
