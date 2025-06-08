@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -149,6 +150,21 @@ public class UserController {
 		User user = uService.getByUsername(auth.getName());
 		
 		return new ResponseEntity<>(user, HttpStatus.OK);
+		
+	}
+	@DeleteMapping("/{id}")
+	public ResponseEntity<?> delete (@PathVariable("id") long id, Authentication auth){
+		
+		if(!uService.isAdmin(auth)) {
+			return new ResponseEntity<>("Current user is not authorized to delete",HttpStatus.UNAUTHORIZED);
+		}
+		
+		try {
+			uService.deleteById(id);
+			return new ResponseEntity<>("User with ID " + id + " has been deleted by " + auth.getName(), HttpStatus.OK);
+		} catch (UserNotFoundException e) {
+			return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+		}
 		
 	}
 }

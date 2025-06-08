@@ -156,4 +156,10 @@ public class UserService {
 		return currentUser;
 
 	}
+	
+	public void deleteById(long id) {
+			User user = this.getUserByID(id);
+			uRepo.delete(user);
+
+	}
 }
