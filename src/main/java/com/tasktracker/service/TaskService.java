@@ -8,8 +8,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.tasktracker.dto.DTOTask;
 import com.tasktracker.dto.DTOTaskCreate;
+import com.tasktracker.dto.DTOTaskUpdate;
+import com.tasktracker.exception.StatusNotFoundException;
 import com.tasktracker.model.Status;
 import com.tasktracker.model.Task;
 import com.tasktracker.repository.TaskRepo;
@@ -204,26 +205,20 @@ public class TaskService {
 	/**
 	 * Updates the status of an existing {@link Task} based on the provided DTO.
 	 * <p>
-	 * If the new status ID is {@code 3} ("DONE"), the task's completed timestamp
+	 * If the new status name is "DONE" ({@code 3}), the task's completed timestamp
 	 * is set to the current time.
 	 * </p>
 	 * 
 	 * @param task the task to update
-	 * @param dto  the DTO containing the new status ID
+	 * @param dto  the DTO containing the new status name
 	 * @return the updated {@link Task} entity
-	 * @throws IllegalArgumentException if the status ID does not exist
+	 * @throws StatusNotFoundException if the status name does not exist
 	 */
-	public Task updateStatus(Task task, DTOTask dto)
-			throws IllegalArgumentException {
-		// validate DTO's status_id field. if it's not valid, exception is
-		// thrown
-		Status status = statusService.findStatusById(dto.getStatusID());
+	public Task updateStatus(Task task, DTOTaskUpdate dto)
+			throws StatusNotFoundException {
 
-		if (status == null) {
-			throw new IllegalArgumentException("Status with ID "
-					+ dto.getStatusID()
-					+ " does not exists. Status update request failed.");
-		}
+		Status status = statusService.findStatusByName(dto.getStatusName());
+
 		// status field of the provided task is updated with the DTO's value
 		task.setStatus(status);
 		// if the new status is "COMPLETED", completedAt field is set to current
@@ -247,7 +242,7 @@ public class TaskService {
 	 * @return the updated {@link Task} entity
 	 * @throws IllegalArgumentException if the description is null or empty
 	 */
-	public Task updateDescription(Task task, DTOTask dto)
+	public Task updateDescription(Task task, DTOTaskUpdate dto)
 			throws IllegalArgumentException {
 		// validate DTO's description field. if it's not valid, exception is
 		// thrown
