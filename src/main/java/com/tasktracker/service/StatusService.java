@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
+import com.tasktracker.exception.StatusNotFoundException;
 import com.tasktracker.model.Status;
 import com.tasktracker.repository.StatusRepo;
 
@@ -42,11 +43,11 @@ public class StatusService {
 	 * @param statusName the name of the status to be retrieved
 	 * @return the {@link Status} object matching the given name, or {@code null} if not found
 	 */
-	public Status findStatusByName(String statusName) {
+	public Status findStatusByName(String statusName) throws StatusNotFoundException {
 		Optional<Status> status = statusRepo.findByStatusName(statusName.toUpperCase());
 
 		if (!status.isPresent()) {
-			return null;
+			throw new StatusNotFoundException("Status " + statusName + " cannot be found");
 		}
 
 		return status.get();
@@ -62,7 +63,7 @@ public class StatusService {
 		Optional<Status> status = statusRepo.findById(statusId);
 
 		if (!status.isPresent()) {
-			return null;
+			throw new StatusNotFoundException("Status with ID '" + statusId + "' cannot be found");
 		}
 
 		return status.get();
