@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -18,8 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tasktracker.dto.DTOTask;
 import com.tasktracker.dto.DTOTaskCreate;
+import com.tasktracker.dto.DTOTaskUpdate;
+import com.tasktracker.exception.StatusNotFoundException;
 import com.tasktracker.model.Task;
 import com.tasktracker.security.model.User;
 import com.tasktracker.security.service.UserService;
@@ -28,19 +30,20 @@ import com.tasktracker.service.TaskService;
 /**
  * REST controller for managing {@link Task} entities.
  * <p>
- * Provides endpoints for CRUD operations on tasks, including filtering tasks by status,
- * retrieving task details, creating new tasks, updating existing tasks, and marking tasks as deleted.
+ * Provides endpoints for CRUD operations on tasks, including filtering tasks by
+ * status, retrieving task details, creating new tasks, updating existing tasks,
+ * and marking tasks as deleted.
  * <p>
- * All endpoints require the user to be authenticated. Ownership checks are performed
- * to ensure users can only access and modify their own tasks.
+ * All endpoints require the user to be authenticated. Ownership checks are
+ * performed to ensure users can only access and modify their own tasks.
  * </p>
  * 
  * Base URL for all endpoints is <code>/rest</code>.
  * 
- * @author 
+ * @author
  * @version 1.0
  */
-//@CrossOrigin
+// @CrossOrigin
 @RestController
 @RequestMapping("/rest")
 public class TaskRestController {
@@ -53,8 +56,10 @@ public class TaskRestController {
 	/**
 	 * Constructs a new {@code TaskRestController} with the specified services.
 	 * 
-	 * @param tService the task service used to perform operations on tasks
-	 * @param uService the user service used to retrieve user information
+	 * @param tService
+	 *            the task service used to perform operations on tasks
+	 * @param uService
+	 *            the user service used to retrieve user information
 	 */
 	public TaskRestController(TaskService tService, UserService uService) {
 		this.tService = tService;
@@ -66,17 +71,20 @@ public class TaskRestController {
 	/**
 	 * Retrieves a list of tasks for the currently authenticated user.
 	 * <p>
-	 * If a status query parameter is provided, filters the tasks by that status.
-	 * If no status is provided, returns all tasks for the user.
+	 * If a status query parameter is provided, filters the tasks by that
+	 * status. If no status is provided, returns all tasks for the user.
 	 * </p>
 	 * <p>
-	 * Returns HTTP 204 (No Content) if no tasks are found.
-	 * Returns HTTP 400 (Bad Request) if the provided status is invalid.
+	 * Returns HTTP 204 (No Content) if no tasks are found. Returns HTTP 400
+	 * (Bad Request) if the provided status is invalid.
 	 * </p>
 	 * 
-	 * @param status optional task status filter
-	 * @param auth the authentication object of the current user
-	 * @return a {@link ResponseEntity} with the list of tasks or an error status
+	 * @param status
+	 *            optional task status filter
+	 * @param auth
+	 *            the authentication object of the current user
+	 * @return a {@link ResponseEntity} with the list of tasks or an error
+	 *         status
 	 */
 	@GetMapping("tasks")
 	public ResponseEntity<?> list(
@@ -94,7 +102,7 @@ public class TaskRestController {
 			// and a ResponseEntity with HttpStatus 400 (BAD_REQUEST) and an
 			// error message is returned
 			try {
-				tasks = tService.getByUserAndStatus(id,status);
+				tasks = tService.getByUserAndStatus(id, status);
 
 			} catch (IllegalArgumentException e) {
 				logger.error(e.getMessage());
@@ -127,17 +135,20 @@ public class TaskRestController {
 	/**
 	 * Retrieves the details of a specific task by its ID.
 	 * <p>
-	 * Verifies that the authenticated user owns the task.
-	 * Returns HTTP 404 (Not Found) if the task does not exist.
-	 * Returns HTTP 401 (Unauthorized) if the user is not the owner.
+	 * Verifies that the authenticated user owns the task. Returns HTTP 404 (Not
+	 * Found) if the task does not exist. Returns HTTP 401 (Unauthorized) if the
+	 * user is not the owner.
 	 * </p>
 	 * 
-	 * @param id the ID of the task to retrieve
-	 * @param auth the authentication object of the current user
+	 * @param id
+	 *            the ID of the task to retrieve
+	 * @param auth
+	 *            the authentication object of the current user
 	 * @return a {@link ResponseEntity} containing the task or an error status
 	 */
 	@GetMapping("tasks/{id}")
-	public ResponseEntity<?> detail(@PathVariable("id") Long id, Authentication auth) {
+	public ResponseEntity<?> detail(@PathVariable("id") Long id,
+			Authentication auth) {
 
 		logger.info("Attempting to retrieve task with ID {}...", id);
 
@@ -153,14 +164,19 @@ public class TaskRestController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 
-		// retrieve current authenticated user and verify that is owner of the task to retrieve.
-		// if verification fails (isUserTask return false), a ResponseEntity with HttpStatus 403 (UNAUTHORIZED) and an
+		// retrieve current authenticated user and verify that is owner of the
+		// task to retrieve.
+		// if verification fails (isUserTask return false), a ResponseEntity
+		// with HttpStatus 403 (UNAUTHORIZED) and an
 		// error message is returned
-		User user=uService.getByUsername(auth.getName());
+		User user = uService.getByUsername(auth.getName());
 
 		if (!tService.isUserTask(task, user)) {
-			logger.error("user {} attempted to access task with id {}", auth.getName(), id);
-			return new ResponseEntity<>("Cannot access task with id " + id + " with current user", HttpStatus.UNAUTHORIZED);
+			logger.error("user {} attempted to access task with id {}",
+					auth.getName(), id);
+			return new ResponseEntity<>(
+					"Cannot access task with id " + id + " with current user",
+					HttpStatus.UNAUTHORIZED);
 		}
 
 		// a ResponseEntity with HttpStatus 200 (OK) and the task with the
@@ -176,21 +192,25 @@ public class TaskRestController {
 	/**
 	 * Creates a new task for the currently authenticated user.
 	 * <p>
-	 * Validates the data from the provided {@link DTOTask} object.
-	 * Returns HTTP 400 (Bad Request) if the data is invalid.
+	 * Validates the data from the provided {@link DTOTask} object. Returns HTTP
+	 * 400 (Bad Request) if the data is invalid.
 	 * </p>
 	 * 
-	 * @param dtoTask the data transfer object containing task details
-	 * @param auth the authentication object of the current user
-	 * @return a {@link ResponseEntity} containing the created task or an error status
+	 * @param dtoTask
+	 *            the data transfer object containing task description
+	 * @param auth
+	 *            the authentication object of the current user
+	 * @return a {@link ResponseEntity} containing the created task or an error
+	 *         status
 	 */
 	@PostMapping("tasks")
-	public ResponseEntity<?> create(@RequestBody DTOTaskCreate dtoTask,
+	public ResponseEntity<?> create(
+			@Validated @RequestBody DTOTaskCreate dtoTask,
 			Authentication auth) {
-		logger.info("Attempting to create a new task...");
+		logger.info("{} is creating a new task", auth.getName());
 		Task task = new Task();
-		// DTO's fields (description, user, status_id) are validated. if any of
-		// the field is not valid, the exception is caught and a ResponseEntity
+		// DTO's field description ais validated. if is not valid (null or
+		// empty), the exception is caught and a ResponseEntity
 		// with HttpStatus 400
 		// (BAD_REQUEST) and an error message is returned
 		try {
@@ -213,20 +233,33 @@ public class TaskRestController {
 	 * <p>
 	 * Only allows updates to the task's status and description.
 	 * Prevents changing the status to "deleted" via PATCH; use DELETE endpoint instead.
+	 * </p>
+	 * <p>
 	 * Verifies task ownership.
+	 * </p>
+	 * <p>
 	 * Returns HTTP 404 (Not Found) if the task does not exist.
-	 * Returns HTTP 400 (Bad Request) for invalid data or if the task is marked deleted.
+	 * </p>
+	 * <p>
+	 * Returns HTTP 400 (Bad Request) for invalid data or if the task
+	 * is marked deleted.
+	 * </p>
+	 * <p>
 	 * Returns HTTP 401 (Unauthorized) if the user is not the owner.
 	 * </p>
 	 * 
-	 * @param id the ID of the task to update
-	 * @param dto the DTO containing updated data
-	 * @param auth the authentication object of the current user
-	 * @return a {@link ResponseEntity} containing the updated task or an error status
+	 * @param id
+	 *            the ID of the task to update
+	 * @param dto
+	 *            the DTO containing updated data
+	 * @param auth
+	 *            the authentication object of the current user
+	 * @return a {@link ResponseEntity} containing the updated task or an error
+	 *         status
 	 */
 	@PatchMapping("tasks/{id}")
 	public ResponseEntity<?> update(@PathVariable("id") long id,
-			@RequestBody DTOTask dto, Authentication auth) {
+			@RequestBody DTOTaskUpdate dto, Authentication auth) {
 
 		logger.info("Attempting to retrieve task with ID {}...", id);
 		Task task = new Task();
@@ -241,14 +274,19 @@ public class TaskRestController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 
-		// retrieve current authenticated user and verify that is owner of the task to retrieve.
-		// if verification fails (isUserTask return false), a ResponseEntity with HttpStatus 403 (UNAUTHORIZED) and an
+		// retrieve current authenticated user and verify that is owner of the
+		// task to retrieve.
+		// if verification fails (isUserTask return false), a ResponseEntity
+		// with HttpStatus 403 (UNAUTHORIZED) and an
 		// error message is returned
-		User user=uService.getByUsername(auth.getName());
+		User user = uService.getByUsername(auth.getName());
 
 		if (!tService.isUserTask(task, user)) {
-			logger.error("user {} attempted to update task with id {}", auth.getName(), id);
-			return new ResponseEntity<>("Cannot update task with id " + id + " with current user", HttpStatus.UNAUTHORIZED);
+			logger.error("user {} attempted to update task with id {}",
+					auth.getName(), id);
+			return new ResponseEntity<>(
+					"Cannot update task with id " + id + " with current user",
+					HttpStatus.UNAUTHORIZED);
 		}
 
 		// task status is checked. if is DELETED, a a ResponseEntity with
@@ -258,22 +296,22 @@ public class TaskRestController {
 					"Task has already been marked as deleted and cannot be updated.",
 					HttpStatus.BAD_REQUEST);
 		}
-		// if provided, DTO's status_id is validated. if it is not valid,
+		// if provided, DTO's statusName is validated. if it is not valid,
 		// exception is caught and a ResponseEntity with HttpStatus 400
 		// (BAD_REQUEST) and an error message is returned
-		if (dto.getStatusID() > 0) {
+		if (dto.getStatusName() != null && !dto.getStatusName().isEmpty()) {
 			try {
 				// it's not possible to mark a task as deleted using this method
 				// if status is valid, but is DELETED, a ResponseEntity with
 				// HttpStatus 400 (BAD_REQUEST) and an error message is returned
-				if (dto.getStatusID() == 4) {
+				if (dto.getStatusName().toLowerCase().equals("deleted")) {
 					return new ResponseEntity<>(
 							"Cannot update task status to 'deleted' via PATCH. Use DELETE instead.",
 							HttpStatus.BAD_REQUEST);
 				}
 				// upon validation, status is updated
 				tService.updateStatus(task, dto);
-			} catch (IllegalArgumentException e) {
+			} catch (StatusNotFoundException e) {
 				logger.error(e.getMessage());
 				return new ResponseEntity<>(e.getMessage(),
 						HttpStatus.BAD_REQUEST);
@@ -307,18 +345,22 @@ public class TaskRestController {
 	/**
 	 * Marks a task as deleted by its ID.
 	 * <p>
-	 * Sets the task status to "deleted" and marks it as deleted.
-	 * Verifies that the authenticated user is the owner of the task.
-	 * Returns HTTP 404 (Not Found) if the task does not exist.
-	 * Returns HTTP 401 (Unauthorized) if the user is not the owner.
+	 * Sets the task status to "deleted" and marks it as deleted. Verifies that
+	 * the authenticated user is the owner of the task. Returns HTTP 404 (Not
+	 * Found) if the task does not exist. Returns HTTP 401 (Unauthorized) if the
+	 * user is not the owner.
 	 * </p>
 	 * 
-	 * @param id the ID of the task to delete
-	 * @param auth the authentication object of the current user
-	 * @return a {@link ResponseEntity} with a confirmation message or an error status
+	 * @param id
+	 *            the ID of the task to delete
+	 * @param auth
+	 *            the authentication object of the current user
+	 * @return a {@link ResponseEntity} with a confirmation message or an error
+	 *         status
 	 */
 	@DeleteMapping("tasks/{id}")
-	public ResponseEntity<String> delete(@PathVariable("id") long id, Authentication auth) {
+	public ResponseEntity<String> delete(@PathVariable("id") long id,
+			Authentication auth) {
 
 		logger.info("Attempting to delete task with ID: {}", id);
 		Task task = new Task();
@@ -333,14 +375,19 @@ public class TaskRestController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 
-		// retrieve current authenticated user and verify that is owner of the task to retrieve.
-		// if verification fails (isUserTask return false), a ResponseEntity with HttpStatus 403 (UNAUTHORIZED) and an
+		// retrieve current authenticated user and verify that is owner of the
+		// task to retrieve.
+		// if verification fails (isUserTask return false), a ResponseEntity
+		// with HttpStatus 403 (UNAUTHORIZED) and an
 		// error message is returned
-		User user=uService.getByUsername(auth.getName());
+		User user = uService.getByUsername(auth.getName());
 
 		if (!tService.isUserTask(task, user)) {
-			logger.error("user {} attempted to delete task with id {}", auth.getName(), id);
-			return new ResponseEntity<>("Cannot delete task with id " + id + " with current user", HttpStatus.UNAUTHORIZED);
+			logger.error("user {} attempted to delete task with id {}",
+					auth.getName(), id);
+			return new ResponseEntity<>(
+					"Cannot delete task with id " + id + " with current user",
+					HttpStatus.UNAUTHORIZED);
 		}
 
 		// upon validation, the task with the specified ID is marked ad deleted
