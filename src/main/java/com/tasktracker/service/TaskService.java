@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.tasktracker.dto.DTOTask;
+import com.tasktracker.dto.DTOTaskCreate;
 import com.tasktracker.model.Status;
 import com.tasktracker.model.Task;
 import com.tasktracker.repository.TaskRepo;
@@ -165,7 +166,7 @@ public class TaskService {
 
 	/**
 	 * Validates and creates a new {@link Task} entity based on the provided DTO
-	 * and user.
+	 * and authenticated user.
 	 * <p>
 	 * The method verifies that description is not null/empty and status ID exists.
 	 * Upon validation, it creates and persists the new task.
@@ -174,10 +175,9 @@ public class TaskService {
 	 * @param dto  the DTO containing the task data to create
 	 * @param user the {@link User} who owns the task
 	 * @return the newly created {@link Task} entity
-	 * @throws IllegalArgumentException if description is null/empty or status ID
-	 *                                  does not exist
+	 * @throws IllegalArgumentException if description is null/empty
 	 */
-	public Task createFromDTO(DTOTask dto, User user)
+	public Task createFromDTO(DTOTaskCreate dto, User user)
 			throws IllegalArgumentException {
 
 		// validate DTO's description field. if it's not valid, exception is
@@ -187,18 +187,12 @@ public class TaskService {
 					"Description cannot be null. Creation request failed.");
 		}
 
-		// validate DTO's status_id field. if it's not valid, exception is
-		// thrown
-		if (statusService.findStatusById(dto.getStatusID()) == null) {
-			throw new IllegalArgumentException(
-					"Status with ID " + dto.getStatusID()
-							+ " does not exists. Creation request failed.");
-		}
 		// instantiate a new task using DTO's values
 		Task task = new Task();
 		task.setUser(user);
 		task.setDescription(dto.getDescription());
-		task.setStatus(statusService.findStatusById(dto.getStatusID()));
+		Status toDoStatus = statusService.findStatusByName("to-do");
+		task.setStatus(toDoStatus);
 		// task.setUser(dto.getUser());
 		// saves the task in the DB and return it
 		taskRepo.save(task);

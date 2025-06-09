@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tasktracker.dto.DTOTask;
+import com.tasktracker.dto.DTOTaskCreate;
 import com.tasktracker.model.Task;
 import com.tasktracker.security.model.User;
 import com.tasktracker.security.service.UserService;
@@ -82,7 +83,7 @@ public class TaskRestController {
 			@RequestParam(name = "status", required = false) String status,
 			Authentication auth) {
 		List<Task> tasks;
-		// TODO: filter password by user and status
+
 		long id = uService.getIdByUsername(auth.getName());
 
 		if (status != null && !status.isEmpty()) {
@@ -184,7 +185,7 @@ public class TaskRestController {
 	 * @return a {@link ResponseEntity} containing the created task or an error status
 	 */
 	@PostMapping("tasks")
-	public ResponseEntity<?> create(@RequestBody DTOTask dtoTask,
+	public ResponseEntity<?> create(@RequestBody DTOTaskCreate dtoTask,
 			Authentication auth) {
 		logger.info("Attempting to create a new task...");
 		Task task = new Task();
